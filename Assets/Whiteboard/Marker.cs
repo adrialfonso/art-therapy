@@ -120,4 +120,13 @@ public class Marker : MonoBehaviour
             whiteboard.Undo();
         }
     }
+
+    public void SetStrategy(int index)
+    {
+        if (index >= 0 && index < strategies.Count)
+        {
+            currentIndex = index;
+            currentStrategy = strategies[currentIndex];
+        }
+    }
 }
