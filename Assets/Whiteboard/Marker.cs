@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
 using System.Linq;
+using UnityEngine.UI;
 
 public class Marker : MonoBehaviour
 {
@@ -12,9 +13,12 @@ public class Marker : MonoBehaviour
     [SerializeField] private int brushSize = 50;
     [SerializeField] private Color brushColor = Color.red;
 
+    [Header("UI Elements")]
+    [SerializeField] private Slider brushSizeSlider;
+
     // XRI Default Input Actions used for marker interaction
     [Header("XRI Marker Actions")]
-    [SerializeField] private InputActionProperty CycleStrategyAction;   
+    // [SerializeField] private InputActionProperty CycleStrategyAction;   
     [SerializeField] private InputActionProperty DrawAction; 
     [SerializeField] private InputActionProperty EraseAction;
     [SerializeField] private InputActionProperty UndoAction;
@@ -34,6 +38,17 @@ public class Marker : MonoBehaviour
 
         brushColors = Enumerable.Repeat(brushColor, brushSize * brushSize).ToArray();
 
+        // Initialize brush size slider
+        if (brushSizeSlider != null)
+        {
+            brushSizeSlider.minValue = 1;
+            brushSizeSlider.maxValue = 100;
+            brushSizeSlider.value = brushSize;
+
+            // Listen for changes to the slider value
+            brushSizeSlider.onValueChanged.AddListener(OnBrushSizeChanged);
+        }
+
         // Initialize marker strategies
         strategies = new List<IMarkerStrategy>
         {
@@ -44,8 +59,8 @@ public class Marker : MonoBehaviour
 
         currentStrategy = strategies[currentIndex];
 
-        if (CycleStrategyAction.action != null)
-            CycleStrategyAction.action.performed += _ => CycleStrategy();
+        // if (CycleStrategyAction.action != null)
+        //     CycleStrategyAction.action.performed += _ => CycleStrategy();
         
         if (EraseAction.action != null)
             EraseAction.action.performed += _ => ToggleEraseMode();
@@ -100,13 +115,14 @@ public class Marker : MonoBehaviour
         touchedLastFrame = false;
     }
 
-    // Cycle through available marker strategies
-    private void CycleStrategy()
-    {
-        currentIndex = (currentIndex + 1) % strategies.Count;
-        currentStrategy = strategies[currentIndex];
-    }
+    // Cycle through available marker strategies (Disabled for UI selection)
+    // private void CycleStrategy()
+    // {
+    //     currentIndex = (currentIndex + 1) % strategies.Count;
+    //     currentStrategy = strategies[currentIndex];
+    // }
 
+    // Toggle between draw and erase modes
     private void ToggleEraseMode()
     {
         isErasing = !isErasing;
@@ -121,6 +137,7 @@ public class Marker : MonoBehaviour
         }
     }
 
+    // Set the current strategy based on UI selection
     public void SetStrategy(int index)
     {
         if (index >= 0 && index < strategies.Count)
@@ -128,5 +145,11 @@ public class Marker : MonoBehaviour
             currentIndex = index;
             currentStrategy = strategies[currentIndex];
         }
+    }
+
+    private void OnBrushSizeChanged(float newSize)
+    {
+        brushSize = Mathf.RoundToInt(newSize);
+        brushColors = Enumerable.Repeat(brushColor, brushSize * brushSize).ToArray();
     }
 }

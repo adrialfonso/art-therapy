@@ -1622,18 +1622,7 @@ MonoBehaviour:
   rayInteractor: {fileID: 633942281}
   brushSize: 100
   brushColor: {r: 0.91252565, g: 0, b: 1, a: 1}
-  CycleStrategyAction:
-    m_UseReference: 1
-    m_Action:
-      m_Name: Cycle Strategy
-      m_Type: 0
-      m_ExpectedControlType: 
-      m_Id: 75530404-5c5c-4cb1-b4fd-02b85e9e2cac
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings: []
-      m_Flags: 0
-    m_Reference: {fileID: 8515397708303502302, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+  brushSizeSlider: {fileID: 0}
   DrawAction:
     m_UseReference: 1
     m_Action:
@@ -2296,7 +2285,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   texture: {fileID: 0}
   originalTexture: {fileID: 0}
-  textureSize: {x: 1137.778, y: 910.222}
+  textureSize: {x: 1024, y: 512}
 --- !u!64 &980532544
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -3086,7 +3075,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.25}
   m_AnchorMax: {x: 1, y: 0.75}
-  m_AnchoredPosition: {x: -5, y: 0}
+  m_AnchoredPosition: {x: 5, y: 0}
   m_SizeDelta: {x: -20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1648797030
@@ -3967,19 +3956,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rayInteractor: {fileID: 1960609105}
   brushSize: 100
-  brushColor: {r: 0.16509432, g: 0.48376054, b: 1, a: 1}
-  CycleStrategyAction:
-    m_UseReference: 1
-    m_Action:
-      m_Name: Cycle Strategy
-      m_Type: 0
-      m_ExpectedControlType: 
-      m_Id: 6110573e-0015-4526-b631-b36fe7004c8c
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings: []
-      m_Flags: 0
-    m_Reference: {fileID: 6203011853447466583, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+  brushColor: {r: 0, g: 0, b: 0, a: 1}
+  brushSizeSlider: {fileID: 2125904083}
   DrawAction:
     m_UseReference: 1
     m_Action:
@@ -4425,7 +4403,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2047347505}
   m_FillRect: {fileID: 1648797031}
   m_HandleRect: {fileID: 2047347504}
-  m_Direction: 0
+  m_Direction: 1
   m_MinValue: 0
   m_MaxValue: 1
   m_WholeNumbers: 0
