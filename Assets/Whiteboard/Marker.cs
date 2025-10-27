@@ -19,6 +19,8 @@ public class Marker : MonoBehaviour
     [SerializeField] private TMP_Text brushSizeText;
     [SerializeField] private Slider colorSlider;
     [SerializeField] private Image colorPreview;
+    [SerializeField] private Slider brightnessSlider;
+    [SerializeField] private TMP_Text brightnessText;
 
     // XRI Default Input Actions used for marker interaction
     [Header("XRI Marker Actions")]
@@ -34,6 +36,7 @@ public class Marker : MonoBehaviour
     private int currentIndex = 0;
     private IMarkerStrategy currentStrategy;
     private bool isErasing, savedUndoState, touchedLastFrame = false;
+    private Color baseColor;
 
     void Start()
     {
@@ -58,6 +61,16 @@ public class Marker : MonoBehaviour
         {
             colorSlider.onValueChanged.AddListener(OnColorSliderChanged);
             OnColorSliderChanged(colorSlider.value); 
+        }
+
+        // Initialize brightness slider
+        if (brightnessSlider != null)
+        {
+            brightnessSlider.minValue = 1;
+            brightnessSlider.maxValue = 100;
+            brightnessSlider.value = 50; 
+            brightnessSlider.onValueChanged.AddListener(OnBrightnessChanged);
+            OnBrightnessChanged(brightnessSlider.value); 
         }
 
         // Initialize marker strategies
@@ -158,7 +171,7 @@ public class Marker : MonoBehaviour
         }
     }
 
-    // Update brush size based on slider value
+    // Listener for brush size slider changes
     private void OnBrushSizeChanged(float newSize)
     {
         brushSize = Mathf.RoundToInt(newSize);
@@ -170,16 +183,46 @@ public class Marker : MonoBehaviour
         }
     }
 
-    // Update brush color based on slider value
+    // Listener for color slider changes
     private void OnColorSliderChanged(float value)
     {
-        Color newColor = Color.HSVToRGB(value, 1f, 1f);
-        brushColor = newColor;
-        brushColors = Enumerable.Repeat(brushColor, brushSize * brushSize).ToArray();
+        baseColor = Color.HSVToRGB(value, 1f, 1f);
+        UpdateBrushColorWithBrightness();
+    }
 
-        if (colorPreview != null) 
+    // Listener for brightness slider changes
+    private void OnBrightnessChanged(float value)
+    {
+        UpdateBrushColorWithBrightness();
+        if (brightnessText != null)
+            brightnessText.text = Mathf.RoundToInt(value).ToString();
+    }
+
+    // Update the brush color by combining base color and brightness
+    private void UpdateBrushColorWithBrightness()
+    {
+        float value = brightnessSlider.value;
+        Color finalColor;
+
+        if (value < 50)
         {
-            colorPreview.color = brushColor;
+            float t = value / 50f; 
+            finalColor = Color.Lerp(Color.white, baseColor, t);
         }
+        else if (value > 50)
+        {
+            float t = (value - 50f) / 50f; 
+            finalColor = Color.Lerp(baseColor, Color.black, t);
+        }
+        else
+        {
+            finalColor = baseColor;
+        }
+
+        brushColor = finalColor;
+        brushColors = Enumerable.Repeat(finalColor, brushSize * brushSize).ToArray();
+
+        if (colorPreview != null)
+            colorPreview.color = finalColor;
     }
 }
