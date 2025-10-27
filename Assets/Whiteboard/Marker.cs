@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
 using System.Linq;
 using UnityEngine.UI;
+using TMPro;
 
 public class Marker : MonoBehaviour
 {
@@ -15,6 +16,9 @@ public class Marker : MonoBehaviour
 
     [Header("UI Elements")]
     [SerializeField] private Slider brushSizeSlider;
+    [SerializeField] private TMP_Text brushSizeText;
+    [SerializeField] private Slider colorSlider;
+    [SerializeField] private Image colorPreview;
 
     // XRI Default Input Actions used for marker interaction
     [Header("XRI Marker Actions")]
@@ -45,8 +49,15 @@ public class Marker : MonoBehaviour
             brushSizeSlider.maxValue = 100;
             brushSizeSlider.value = brushSize;
 
-            // Listen for changes to the slider value
             brushSizeSlider.onValueChanged.AddListener(OnBrushSizeChanged);
+            OnBrushSizeChanged(brushSizeSlider.value);
+        }
+
+        // Initialize color slider
+        if (colorSlider != null)
+        {
+            colorSlider.onValueChanged.AddListener(OnColorSliderChanged);
+            OnColorSliderChanged(colorSlider.value); 
         }
 
         // Initialize marker strategies
@@ -129,7 +140,7 @@ public class Marker : MonoBehaviour
     } 
 
     // Undo the last stroke
-    public void Undo()
+    private void Undo()
     {
         if (whiteboard != null)
         {
@@ -147,9 +158,28 @@ public class Marker : MonoBehaviour
         }
     }
 
+    // Update brush size based on slider value
     private void OnBrushSizeChanged(float newSize)
     {
         brushSize = Mathf.RoundToInt(newSize);
         brushColors = Enumerable.Repeat(brushColor, brushSize * brushSize).ToArray();
+
+        if (brushSizeText != null) 
+        {
+            brushSizeText.text = brushSize.ToString();
+        }
+    }
+
+    // Update brush color based on slider value
+    private void OnColorSliderChanged(float value)
+    {
+        Color newColor = Color.HSVToRGB(value, 1f, 1f);
+        brushColor = newColor;
+        brushColors = Enumerable.Repeat(brushColor, brushSize * brushSize).ToArray();
+
+        if (colorPreview != null) 
+        {
+            colorPreview.color = brushColor;
+        }
     }
 }
