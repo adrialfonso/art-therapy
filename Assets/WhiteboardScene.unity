@@ -374,7 +374,7 @@ GameObject:
   - component: {fileID: 126432150}
   - component: {fileID: 126432149}
   m_Layer: 5
-  m_Name: Image
+  m_Name: Color Preview Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1198,6 +1198,78 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &436804231
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 436804233}
+  - component: {fileID: 436804232}
+  m_Layer: 0
+  m_Name: Brush Settings Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &436804232
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 436804231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f0e4645f0392d3458b79d5845f0fa11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canvasObject: {fileID: 830098435}
+  rightHandController: {fileID: 1960609106}
+  leftHandController: {fileID: 633942282}
+  ShowMenuLeftAction:
+    m_UseReference: 1
+    m_Action:
+      m_Name: Show Menu Left
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: 2278f445-39f3-4ecc-8e96-eb0aa02baa8f
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: -6131295136447488360, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+  ShowMenuRightAction:
+    m_UseReference: 1
+    m_Action:
+      m_Name: Show Menu Right
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: ebd1495e-f940-419e-a8c1-0cc9f820aacc
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: 187161793506945269, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+--- !u!4 &436804233
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 436804231}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 830098440}
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &451777697
 GameObject:
   m_ObjectHideFlags: 0
@@ -1580,9 +1652,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e988983f96fe1dd48800bcdfc82f23e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_LineWidth: 0.02
+  m_LineWidth: 0.01
   m_OverrideInteractorLineLength: 1
-  m_LineLength: 10
+  m_LineLength: 2
   m_WidthCurve:
     serializedVersion: 2
     m_Curve:
@@ -1695,7 +1767,7 @@ MonoBehaviour:
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
   m_TreatSelectionAsValidState: 0
-  m_SmoothMovement: 0
+  m_SmoothMovement: 1
   m_FollowTightness: 10
   m_SnapThresholdDistance: 10
   m_Reticle: {fileID: 0}
@@ -2112,13 +2184,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rayInteractor: {fileID: 633942281}
   brushSize: 100
-  brushColor: {r: 0.91252565, g: 0, b: 1, a: 1}
-  brushSizeSlider: {fileID: 0}
-  brushSizeText: {fileID: 0}
-  colorSlider: {fileID: 0}
-  colorPreview: {fileID: 0}
-  brightnessSlider: {fileID: 0}
-  brightnessText: {fileID: 0}
+  brushColor: {r: 0, g: 0, b: 0, a: 1}
+  brushSizeSlider: {fileID: 2125904083}
+  brushSizeText: {fileID: 1791630456}
+  colorSlider: {fileID: 511194664}
+  colorPreview: {fileID: 126432149}
+  brightnessSlider: {fileID: 1522861447}
+  brightnessText: {fileID: 387205209}
   DrawAction:
     m_UseReference: 1
     m_Action:
@@ -2142,19 +2214,19 @@ MonoBehaviour:
       m_Interactions: 
       m_SingletonActionBindings: []
       m_Flags: 0
-    m_Reference: {fileID: -2090940376170739965, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+    m_Reference: {fileID: 8515397708303502302, guid: c348712bda248c246b8c49b3db54643f, type: 3}
   UndoAction:
-    m_UseReference: 0
+    m_UseReference: 1
     m_Action:
-      m_Name: 
+      m_Name: Undo
       m_Type: 0
       m_ExpectedControlType: 
-      m_Id: 
+      m_Id: 44fcb74c-77ac-4ffe-a115-786b96a6a7f6
       m_Processors: 
       m_Interactions: 
       m_SingletonActionBindings: []
       m_Flags: 0
-    m_Reference: {fileID: 0}
+    m_Reference: {fileID: -2090940376170739965, guid: c348712bda248c246b8c49b3db54643f, type: 3}
 --- !u!1 &648714359
 GameObject:
   m_ObjectHideFlags: 0
@@ -2315,7 +2387,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &757967569
 GameObject:
@@ -2540,6 +2612,7 @@ GameObject:
   - component: {fileID: 830098438}
   - component: {fileID: 830098437}
   - component: {fileID: 830098436}
+  - component: {fileID: 830098441}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -2645,14 +2718,53 @@ RectTransform:
   - {fileID: 697061365}
   - {fileID: 1748714240}
   - {fileID: 1644577984}
-  m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_Father: {fileID: 436804233}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: -30, y: -90, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 3, y: 1.25}
   m_SizeDelta: {x: 75, y: 75}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &830098441
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 830098435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f0e4645f0392d3458b79d5845f0fa11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canvasObject: {fileID: 0}
+  rightHandController: {fileID: 0}
+  leftHandController: {fileID: 0}
+  ShowMenuLeftAction:
+    m_UseReference: 1
+    m_Action:
+      m_Name: Show Menu Left
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: 3f11de3d-3b5e-4f6c-a643-5630d1144af7
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: -6131295136447488360, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+  ShowMenuRightAction:
+    m_UseReference: 1
+    m_Action:
+      m_Name: Show Menu Right
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: b5ea4dd7-f7d1-4efb-abd1-9ec2451f49ae
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: 187161793506945269, guid: c348712bda248c246b8c49b3db54643f, type: 3}
 --- !u!1 &833698115
 GameObject:
   m_ObjectHideFlags: 0
@@ -2814,6 +2926,18 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1960609107}
+        m_TargetAssemblyTypeName: Marker, Assembly-CSharp
+        m_MethodName: SetStrategy
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 1
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 633942283}
         m_TargetAssemblyTypeName: Marker, Assembly-CSharp
         m_MethodName: SetStrategy
         m_Mode: 3
@@ -3175,6 +3299,18 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1960609107}
+        m_TargetAssemblyTypeName: Marker, Assembly-CSharp
+        m_MethodName: SetStrategy
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 633942283}
         m_TargetAssemblyTypeName: Marker, Assembly-CSharp
         m_MethodName: SetStrategy
         m_Mode: 3
@@ -4738,6 +4874,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 633942283}
+        m_TargetAssemblyTypeName: Marker, Assembly-CSharp
+        m_MethodName: SetStrategy
+        m_Mode: 3
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 2
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1942757610
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4836,9 +4984,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e988983f96fe1dd48800bcdfc82f23e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_LineWidth: 0.02
+  m_LineWidth: 0.01
   m_OverrideInteractorLineLength: 1
-  m_LineLength: 10
+  m_LineLength: 2
   m_WidthCurve:
     serializedVersion: 2
     m_Curve:
@@ -4951,7 +5099,7 @@ MonoBehaviour:
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
   m_TreatSelectionAsValidState: 0
-  m_SmoothMovement: 0
+  m_SmoothMovement: 1
   m_FollowTightness: 10
   m_SnapThresholdDistance: 10
   m_Reticle: {fileID: 0}
@@ -5398,7 +5546,7 @@ MonoBehaviour:
       m_Interactions: 
       m_SingletonActionBindings: []
       m_Flags: 0
-    m_Reference: {fileID: 2144823750421280530, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+    m_Reference: {fileID: 6203011853447466583, guid: c348712bda248c246b8c49b3db54643f, type: 3}
   UndoAction:
     m_UseReference: 1
     m_Action:
@@ -5410,7 +5558,7 @@ MonoBehaviour:
       m_Interactions: 
       m_SingletonActionBindings: []
       m_Flags: 0
-    m_Reference: {fileID: 187161793506945269, guid: c348712bda248c246b8c49b3db54643f, type: 3}
+    m_Reference: {fileID: 2144823750421280530, guid: c348712bda248c246b8c49b3db54643f, type: 3}
 --- !u!1 &2017287145
 GameObject:
   m_ObjectHideFlags: 0
