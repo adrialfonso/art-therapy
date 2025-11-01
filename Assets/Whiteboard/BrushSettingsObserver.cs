@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Linq;
 
-public class BrushSettings : MonoBehaviour
+public class BrushSettingsObserver : MonoBehaviour
 {
     public event Action<int> OnBrushSizeChanged;
     public event Action<Color> OnBrushColorChanged;
