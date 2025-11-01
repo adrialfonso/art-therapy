@@ -9,70 +9,50 @@ using TMPro;
 
 public class Marker : MonoBehaviour
 {
-    [Header("Brush Settings")]
     [SerializeField] private XRRayInteractor rayInteractor;
-    [SerializeField] private int brushSize = 50;
-    [SerializeField] private Color brushColor = Color.red;
-    [SerializeField, Range(1,100)] private float brushBrightness = 50f;
 
-    [Header("UI Elements")]
-    [SerializeField] private Slider brushSizeSlider;
-    [SerializeField] private TMP_Text brushSizeText;
-    [SerializeField] private Slider colorSlider;
-    [SerializeField] private Image colorPreview;
-    [SerializeField] private Slider brightnessSlider;
-    [SerializeField] private TMP_Text brightnessText;
-
-    // XRI Default Input Actions used for marker interaction
-    [Header("XRI Marker Actions")]
-    // [SerializeField] private InputActionProperty CycleStrategyAction;   
-    [SerializeField] private InputActionProperty DrawAction; 
-    [SerializeField] private InputActionProperty EraseAction;
-    [SerializeField] private InputActionProperty UndoAction;
+    // Reference to BrushSettings for observing brush property changes
+    [SerializeField] private BrushSettings brushSettings;
 
     private Whiteboard whiteboard;
     private Vector2 lastTouchPos;
     private Color[] brushColors;
     private List<IMarkerStrategy> strategies;
-    private int currentIndex = 0;
     private IMarkerStrategy currentStrategy;
     private bool isErasing, savedUndoState, touchedLastFrame = false;
-    private Color baseColor;
 
-    void Start()
+    // XRI Default Input Actions used for marker interaction
+    [Header("XRI Marker Actions")] 
+    [SerializeField] private InputActionProperty DrawAction; 
+    [SerializeField] private InputActionProperty EraseAction;
+    [SerializeField] private InputActionProperty UndoAction;
+
+    private void OnEnable()
+    {
+        if (brushSettings != null)
+        {
+            brushSettings.OnBrushSizeChanged += OnBrushSizeChanged;
+            brushSettings.OnBrushColorChanged += OnBrushColorChanged;
+            brushSettings.OnStrategyChanged += OnStrategyChanged;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (brushSettings != null)
+        {
+            brushSettings.OnBrushSizeChanged -= OnBrushSizeChanged;
+            brushSettings.OnBrushColorChanged -= OnBrushColorChanged;
+            brushSettings.OnStrategyChanged -= OnStrategyChanged;
+        }
+    }
+
+    private void Start()
     {
         if (rayInteractor == null)
             rayInteractor = GetComponent<XRRayInteractor>();
 
-        brushColors = Enumerable.Repeat(brushColor, brushSize * brushSize).ToArray();
-
-        // Initialize brush size slider
-        if (brushSizeSlider != null)
-        {
-            brushSizeSlider.minValue = 1;
-            brushSizeSlider.maxValue = 100;
-            brushSizeSlider.value = brushSize;
-
-            brushSizeSlider.onValueChanged.AddListener(OnBrushSizeChanged);
-            OnBrushSizeChanged(brushSizeSlider.value);
-        }
-
-        // Initialize color slider
-        if (colorSlider != null)
-        {
-            colorSlider.onValueChanged.AddListener(OnColorSliderChanged);
-            OnColorSliderChanged(colorSlider.value); 
-        }
-
-        // Initialize brightness slider
-        if (brightnessSlider != null)
-        {
-            brightnessSlider.minValue = 1;
-            brightnessSlider.maxValue = 100;
-            brightnessSlider.value = 50; 
-            brightnessSlider.onValueChanged.AddListener(OnBrightnessChanged);
-            OnBrightnessChanged(brightnessSlider.value); 
-        }
+        brushColors = Enumerable.Repeat(brushSettings.BrushColor, brushSettings.BrushSize * brushSettings.BrushSize).ToArray();
 
         // Initialize marker strategies
         strategies = new List<IMarkerStrategy>
@@ -82,11 +62,8 @@ public class Marker : MonoBehaviour
             new WatercolorMarkerStrategy()
         };
 
-        currentStrategy = strategies[currentIndex];
+        currentStrategy = strategies[brushSettings.StrategyIndex];
 
-        // if (CycleStrategyAction.action != null)
-        //     CycleStrategyAction.action.performed += _ => CycleStrategy();
-        
         if (EraseAction.action != null)
             EraseAction.action.performed += _ => ToggleEraseMode();
 
@@ -94,7 +71,7 @@ public class Marker : MonoBehaviour
             UndoAction.action.performed += _ => Undo();
     }
 
-    void Update()
+    private void Update()
     {
         bool isDrawing = DrawAction.action?.ReadValue<float>() > 0.1f;
 
@@ -103,7 +80,7 @@ public class Marker : MonoBehaviour
         else
         {
             touchedLastFrame = false;
-            savedUndoState = false; 
+            savedUndoState = false;
         }
     }
 
@@ -129,7 +106,7 @@ public class Marker : MonoBehaviour
 
                 // Draw using the current strategy
                 if (touchedLastFrame)
-                    currentStrategy.Draw(whiteboard, touchPos, lastTouchPos, brushSize, brushColors, isErasing);
+                    currentStrategy.Draw(whiteboard, touchPos, lastTouchPos, brushSettings.BrushSize, brushColors, isErasing);
 
                 lastTouchPos = touchPos;
                 touchedLastFrame = true;
@@ -139,13 +116,6 @@ public class Marker : MonoBehaviour
 
         touchedLastFrame = false;
     }
-
-    // Cycle through available marker strategies (Disabled for UI selection)
-    // private void CycleStrategy()
-    // {
-    //     currentIndex = (currentIndex + 1) % strategies.Count;
-    //     currentStrategy = strategies[currentIndex];
-    // }
 
     // Toggle between draw and erase modes
     private void ToggleEraseMode()
@@ -162,69 +132,22 @@ public class Marker : MonoBehaviour
         }
     }
 
-    // Set the current strategy based on UI selection
-    public void SetStrategy(int index)
+    // Callback handlers for brush size changes (observed from BrushSettings)
+    private void OnBrushSizeChanged(int size)
+    {
+        brushColors = Enumerable.Repeat(brushSettings.BrushColor, size * size).ToArray();
+    }
+
+    // Callback handlers for brush color changes (observed from BrushSettings)
+    private void OnBrushColorChanged(Color color)
+    {
+        brushColors = Enumerable.Repeat(color, brushSettings.BrushSize * brushSettings.BrushSize).ToArray();
+    }
+
+    // Callback handlers for strategy index changes (observed from BrushSettings)
+    private void OnStrategyChanged(int index)
     {
         if (index >= 0 && index < strategies.Count)
-        {
-            currentIndex = index;
-            currentStrategy = strategies[currentIndex];
-        }
-    }
-
-    // Listener for brush size slider changes
-    private void OnBrushSizeChanged(float newSize)
-    {
-        brushSize = Mathf.RoundToInt(newSize);
-        brushColors = Enumerable.Repeat(brushColor, brushSize * brushSize).ToArray();
-
-        if (brushSizeText != null) 
-        {
-            brushSizeText.text = brushSize.ToString();
-        }
-    }
-
-    // Listener for color slider changes
-    private void OnColorSliderChanged(float value)
-    {
-        baseColor = Color.HSVToRGB(value, 1f, 1f);
-        UpdateBrushColorWithBrightness();
-    }
-
-    // Listener for brightness slider changes
-    private void OnBrightnessChanged(float value)
-    {
-        brushBrightness = value; 
-        UpdateBrushColorWithBrightness();
-
-        if (brightnessText != null)
-            brightnessText.text = Mathf.RoundToInt(brushBrightness).ToString();
-    }
-
-    // Update the brush color by combining base color and brightness
-    private void UpdateBrushColorWithBrightness()
-    {
-        Color finalColor;
-
-        if (brushBrightness < 50)
-        {
-            float t = brushBrightness / 50f; 
-            finalColor = Color.Lerp(Color.white, baseColor, t);
-        }
-        else if (brushBrightness > 50)
-        {
-            float t = (brushBrightness - 50f) / 50f; 
-            finalColor = Color.Lerp(baseColor, Color.black, t);
-        }
-        else
-        {
-            finalColor = baseColor;
-        }
-
-        brushColor = finalColor;
-        brushColors = Enumerable.Repeat(finalColor, brushSize * brushSize).ToArray();
-
-        if (colorPreview != null)
-            colorPreview.color = finalColor;
+            currentStrategy = strategies[index];
     }
 }

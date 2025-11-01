@@ -1208,6 +1208,7 @@ GameObject:
   m_Component:
   - component: {fileID: 436804233}
   - component: {fileID: 436804232}
+  - component: {fileID: 436804234}
   m_Layer: 0
   m_Name: Brush Settings Manager
   m_TagString: Untagged
@@ -1270,6 +1271,28 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &436804234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 436804231}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2819726d8f1e20749a5e5063a1fa1828, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  brushSize: 50
+  brushColor: {r: 1, g: 0, b: 0, a: 1}
+  brushBrightness: 50
+  strategyIndex: 0
+  brushSizeSlider: {fileID: 2125904083}
+  brushSizeText: {fileID: 1791630456}
+  colorSlider: {fileID: 511194664}
+  colorPreview: {fileID: 126432149}
+  brightnessSlider: {fileID: 1522861447}
+  brightnessText: {fileID: 387205209}
 --- !u!1 &451777697
 GameObject:
   m_ObjectHideFlags: 0
@@ -2182,15 +2205,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b78d423d0c127f409f0af18d4bba1ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  brushSettings: {fileID: 436804234}
   rayInteractor: {fileID: 633942281}
-  brushSize: 100
-  brushColor: {r: 0, g: 0, b: 0, a: 1}
-  brushSizeSlider: {fileID: 2125904083}
-  brushSizeText: {fileID: 1791630456}
-  colorSlider: {fileID: 511194664}
-  colorPreview: {fileID: 126432149}
-  brightnessSlider: {fileID: 1522861447}
-  brightnessText: {fileID: 387205209}
   DrawAction:
     m_UseReference: 1
     m_Action:
@@ -2925,21 +2941,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1960609107}
-        m_TargetAssemblyTypeName: Marker, Assembly-CSharp
-        m_MethodName: SetStrategy
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 633942283}
-        m_TargetAssemblyTypeName: Marker, Assembly-CSharp
-        m_MethodName: SetStrategy
+      - m_Target: {fileID: 436804234}
+        m_TargetAssemblyTypeName: BrushSettings, Assembly-CSharp
+        m_MethodName: SetStrategyIndex
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3298,21 +3302,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1960609107}
-        m_TargetAssemblyTypeName: Marker, Assembly-CSharp
-        m_MethodName: SetStrategy
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 633942283}
-        m_TargetAssemblyTypeName: Marker, Assembly-CSharp
-        m_MethodName: SetStrategy
+      - m_Target: {fileID: 436804234}
+        m_TargetAssemblyTypeName: BrushSettings, Assembly-CSharp
+        m_MethodName: SetStrategyIndex
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4862,21 +4854,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1960609107}
-        m_TargetAssemblyTypeName: Marker, Assembly-CSharp
-        m_MethodName: SetStrategy
-        m_Mode: 3
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 2
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 633942283}
-        m_TargetAssemblyTypeName: Marker, Assembly-CSharp
-        m_MethodName: SetStrategy
+      - m_Target: {fileID: 436804234}
+        m_TargetAssemblyTypeName: BrushSettings, Assembly-CSharp
+        m_MethodName: SetStrategyIndex
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -5514,15 +5494,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b78d423d0c127f409f0af18d4bba1ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  brushSettings: {fileID: 436804234}
   rayInteractor: {fileID: 1960609105}
-  brushSize: 100
-  brushColor: {r: 0, g: 0, b: 0, a: 1}
-  brushSizeSlider: {fileID: 2125904083}
-  brushSizeText: {fileID: 1791630456}
-  colorSlider: {fileID: 511194664}
-  colorPreview: {fileID: 126432149}
-  brightnessSlider: {fileID: 1522861447}
-  brightnessText: {fileID: 387205209}
   DrawAction:
     m_UseReference: 1
     m_Action:
