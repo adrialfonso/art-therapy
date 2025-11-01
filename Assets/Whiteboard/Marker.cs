@@ -13,6 +13,7 @@ public class Marker : MonoBehaviour
     [SerializeField] private XRRayInteractor rayInteractor;
     [SerializeField] private int brushSize = 50;
     [SerializeField] private Color brushColor = Color.red;
+    [SerializeField, Range(1,100)] private float brushBrightness = 50f;
 
     [Header("UI Elements")]
     [SerializeField] private Slider brushSizeSlider;
@@ -193,25 +194,26 @@ public class Marker : MonoBehaviour
     // Listener for brightness slider changes
     private void OnBrightnessChanged(float value)
     {
+        brushBrightness = value; 
         UpdateBrushColorWithBrightness();
+
         if (brightnessText != null)
-            brightnessText.text = Mathf.RoundToInt(value).ToString();
+            brightnessText.text = Mathf.RoundToInt(brushBrightness).ToString();
     }
 
     // Update the brush color by combining base color and brightness
     private void UpdateBrushColorWithBrightness()
     {
-        float value = brightnessSlider.value;
         Color finalColor;
 
-        if (value < 50)
+        if (brushBrightness < 50)
         {
-            float t = value / 50f; 
+            float t = brushBrightness / 50f; 
             finalColor = Color.Lerp(Color.white, baseColor, t);
         }
-        else if (value > 50)
+        else if (brushBrightness > 50)
         {
-            float t = (value - 50f) / 50f; 
+            float t = (brushBrightness - 50f) / 50f; 
             finalColor = Color.Lerp(baseColor, Color.black, t);
         }
         else
