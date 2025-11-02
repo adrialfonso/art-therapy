@@ -21,11 +21,18 @@ public class HandMenuSwitcher : MonoBehaviour
     // State tracking
     private Transform currentHand = null; 
     private bool canvasActive = false; 
+    private Vector3 originalPosition;
+    private Quaternion originalRotation;
+    private int sameHandClickCount = 0;
 
     private void Start()
     {
         rightRay = rightHandController.GetComponent<XRRayInteractor>();
         leftRay = leftHandController.GetComponent<XRRayInteractor>();
+
+        // Keep original position for resetting
+        originalPosition = canvasObject.transform.position;
+        originalRotation = canvasObject.transform.rotation;
 
         if (ShowMenuLeftAction.action != null)
             ShowMenuLeftAction.action.performed += _ => ToggleLeft();
@@ -46,29 +53,51 @@ public class HandMenuSwitcher : MonoBehaviour
 
     private void ToggleHand(Transform targetHand, XRRayInteractor targetRay, XRRayInteractor otherRay)
     {
-        if (canvasActive && currentHand == targetHand)
+        if (currentHand == targetHand)
         {
-            // Second press on the same hand -> only hide the menu
-            canvasObject.SetActive(false);
-            canvasActive = false;
-            currentHand = null;
+            sameHandClickCount++;
+
+            if (sameHandClickCount == 1)
+            {
+                // First click -> attach menu to the same hand
+                canvasObject.SetActive(true);
+                Attach(canvasObject, targetHand);
+                if (targetRay != null) targetRay.enabled = false;
+                if (otherRay != null) otherRay.enabled = true;
+                canvasActive = true;
+            }
+            else if (sameHandClickCount == 2)
+            {
+                // Second click -> just hide menu
+                canvasObject.SetActive(false);
+                if (targetRay != null) targetRay.enabled = true;
+                canvasActive = false;
+            }
+            else
+            {
+                // Third click -> reset to original position
+                canvasObject.SetActive(true);
+                canvasObject.transform.SetParent(null);
+                canvasObject.transform.position = originalPosition;
+                canvasObject.transform.rotation = originalRotation;
+                canvasObject.transform.localScale = new Vector3(0.007f, 0.007f, 0.007f);
+                sameHandClickCount = 0;
+                currentHand = null;
+                canvasActive = true;
+            }
         }
         else
         {
-            // Always re-enable the ray of the other hand
-            if (otherRay != null) 
-            {
-                otherRay.enabled = true;
-            }
+            // Change to the other hand
+            sameHandClickCount = 1;
 
-            // Attach canvas to the pressed hand and disable its ray
+            // Always re-enable the other hand's ray
+            if (otherRay != null) otherRay.enabled = true;
+
+            // Attach canvas to the new hand
             canvasObject.SetActive(true);
             Attach(canvasObject, targetHand);
-            
-            if (targetRay != null) 
-            {
-                targetRay.enabled = false;
-            }
+            if (targetRay != null) targetRay.enabled = false;
 
             currentHand = targetHand;
             canvasActive = true;
@@ -79,6 +108,7 @@ public class HandMenuSwitcher : MonoBehaviour
     {
         obj.transform.SetParent(parentTransform);
         obj.transform.localPosition = Vector3.zero;
+        obj.transform.localRotation = Quaternion.identity;
         obj.transform.localScale = new Vector3(0.003f, 0.003f, 0.003f);
     }
 }
