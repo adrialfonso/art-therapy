@@ -4,13 +4,14 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
 
+// Controller to manage brush drawing on the whiteboard using XRControllers
 public class BrushController : MonoBehaviour
 {
     [Header("XR Ray Interactors")]
     [SerializeField] private XRRayInteractor leftRay;
     [SerializeField] private XRRayInteractor rightRay;
 
-    [Header("Draw Event Managers")]
+    [Header("Draw Event Observers")]
     [SerializeField] private DrawEventObserver leftController;
     [SerializeField] private DrawEventObserver rightController;
 
@@ -23,64 +24,24 @@ public class BrushController : MonoBehaviour
     private IMarkerStrategy currentStrategy;
     private bool isErasing;
 
-    // Internal state per controller
-    private class ControllerState
-    {
-        public XRRayInteractor ray;
-        public bool isDrawing;
-        public Vector2 lastTouchPos;
-        public bool touchedLastFrame;
-        public bool savedUndoState;
-    }
-
-    private ControllerState leftState;
-    private ControllerState rightState;
+    private XRControllerState leftState;
+    private XRControllerState rightState;
 
     private void OnEnable()
     {   
-        // Initialize controller states
-        leftState = new ControllerState { ray = leftRay };
-        rightState = new ControllerState { ray = rightRay };
-
-        // Subscribe to brush settings changes
-        if (brushSettings != null)
-        {
-            brushSettings.OnBrushSizeChanged += OnBrushSizeChanged;
-            brushSettings.OnBrushColorChanged += OnBrushColorChanged;
-            brushSettings.OnStrategyChanged += OnStrategyChanged;
-        }
-
-        if (leftController != null)
-        {
-            leftController.OnDrawPressed += () => leftState.isDrawing = true;
-            leftController.OnDrawReleased += () => leftState.isDrawing = false;
-            leftController.OnErasePressed += ToggleEraseMode;
-            leftController.OnUndoPressed += Undo;
-        }
-
-        if (rightController != null)
-        {
-            rightController.OnDrawPressed += () => rightState.isDrawing = true;
-            rightController.OnDrawReleased += () => rightState.isDrawing = false;
-            rightController.OnErasePressed += ToggleEraseMode;
-            rightController.OnUndoPressed += Undo;
-        }
+        InitializeObserverSubscriptions();
     }
 
     private void Start()
     {
+        // Initialize controller states
+        leftState = new XRControllerState { ray = leftRay };
+        rightState = new XRControllerState { ray = rightRay };
+
         // Initialize brush colors
         brushColors = Enumerable.Repeat(brushSettings.BrushColor, brushSettings.BrushSize * brushSettings.BrushSize).ToArray();
 
-        // Initialize strategies
-        strategies = new List<IMarkerStrategy>
-        {
-            new NormalMarkerStrategy(),
-            new GraffitiMarkerStrategy(),
-            new WatercolorMarkerStrategy()
-        };
-
-        currentStrategy = strategies[brushSettings.StrategyIndex];
+        InitializeMarkerStrategies();
     }
 
     private void Update()
@@ -90,7 +51,7 @@ public class BrushController : MonoBehaviour
     }
 
     // Handle drawing logic for a given controller state
-    private void HandleDrawing(ControllerState state)
+    private void HandleDrawing(XRControllerState state)
     {
         // If not drawing, reset state and return
         if (!state.isDrawing)
@@ -143,12 +104,10 @@ public class BrushController : MonoBehaviour
     }
 
     // Perform undo on the whiteboard (observer pattern)
-    private void Undo()
+    private void UndoWhiteboard()
     {
         if (whiteboard != null)
-        {
             whiteboard.Undo();
-        }
     }
 
     // Listener for brush size changes (observer pattern)
@@ -168,5 +127,46 @@ public class BrushController : MonoBehaviour
     {
         if (index >= 0 && index < strategies.Count)
             currentStrategy = strategies[index];
+    }
+
+    // Initialize subscriptions to observer events
+    private void InitializeObserverSubscriptions()
+    {
+        // Subscribe to brush settings changes
+        if (brushSettings != null)
+        {
+            brushSettings.OnBrushSizeChanged += OnBrushSizeChanged;
+            brushSettings.OnBrushColorChanged += OnBrushColorChanged;
+            brushSettings.OnStrategyChanged += OnStrategyChanged;
+        }
+
+        if (leftController != null)
+        {
+            leftController.OnDrawPressed += () => leftState.isDrawing = true;
+            leftController.OnDrawReleased += () => leftState.isDrawing = false;
+            leftController.OnErasePressed += ToggleEraseMode;
+            leftController.OnUndoPressed += UndoWhiteboard;
+        }
+
+        if (rightController != null)
+        {
+            rightController.OnDrawPressed += () => rightState.isDrawing = true;
+            rightController.OnDrawReleased += () => rightState.isDrawing = false;
+            rightController.OnErasePressed += ToggleEraseMode;
+            rightController.OnUndoPressed += UndoWhiteboard;
+        }
+    }
+
+    // Initialize available marker strategies
+    private void InitializeMarkerStrategies()
+    {
+        strategies = new List<IMarkerStrategy>
+        {
+            new NormalMarkerStrategy(),
+            new GraffitiMarkerStrategy(),
+            new WatercolorMarkerStrategy()
+        };
+
+        currentStrategy = strategies[brushSettings.StrategyIndex];
     }
 }

@@ -19,12 +19,10 @@ public class DrawEventObserver : MonoBehaviour
 
     private void Awake()
     {
-        if (EraseAction.action != null) 
-            EraseAction.action.performed += _ => OnErasePressed?.Invoke();
-        if (UndoAction.action != null) 
-            UndoAction.action.performed += _ => OnUndoPressed?.Invoke();
+        InitializeInputActions();
     }
 
+    // Monitor DrawAction state and raise events on state changes
     private void Update()
     {
         if (DrawAction.action == null) return;
@@ -42,5 +40,14 @@ public class DrawEventObserver : MonoBehaviour
         }
 
         wasDrawingLastFrame = isDrawing;
+    }
+
+    // Initialize input action event subscriptions (Erase and Undo)
+    private void InitializeInputActions()
+    {
+        if (EraseAction.action != null) 
+            EraseAction.action.performed += _ => OnErasePressed?.Invoke();
+        if (UndoAction.action != null) 
+            UndoAction.action.performed += _ => OnUndoPressed?.Invoke();
     }
 }
