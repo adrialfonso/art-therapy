@@ -24,8 +24,8 @@ public class BrushController : MonoBehaviour
     private IMarkerStrategy currentStrategy;
     private bool isErasing;
 
-    private XRControllerState leftState;
-    private XRControllerState rightState;
+    public XRControllerState leftState;
+    public XRControllerState rightState;
 
     private void OnEnable()
     {   

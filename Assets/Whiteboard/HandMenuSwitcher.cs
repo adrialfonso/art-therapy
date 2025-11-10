@@ -20,7 +20,6 @@ public class HandMenuSwitcher : MonoBehaviour
 
     // State tracking
     private Transform currentHand = null; 
-    private bool canvasActive = false; 
     private Vector3 originalPosition;
     private Quaternion originalRotation;
     private int sameHandClickCount = 0;
@@ -64,14 +63,12 @@ public class HandMenuSwitcher : MonoBehaviour
                 Attach(canvasObject, targetHand);
                 if (targetRay != null) targetRay.enabled = false;
                 if (otherRay != null) otherRay.enabled = true;
-                canvasActive = true;
             }
             else if (sameHandClickCount == 2)
             {
                 // Second click -> just hide menu
                 canvasObject.SetActive(false);
                 if (targetRay != null) targetRay.enabled = true;
-                canvasActive = false;
             }
             else
             {
@@ -83,7 +80,6 @@ public class HandMenuSwitcher : MonoBehaviour
                 canvasObject.transform.localScale = new Vector3(0.007f, 0.007f, 0.007f);
                 sameHandClickCount = 0;
                 currentHand = null;
-                canvasActive = true;
             }
         }
         else
@@ -100,7 +96,6 @@ public class HandMenuSwitcher : MonoBehaviour
             if (targetRay != null) targetRay.enabled = false;
 
             currentHand = targetHand;
-            canvasActive = true;
         }
     }
 
