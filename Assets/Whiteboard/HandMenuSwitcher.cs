@@ -103,7 +103,7 @@ public class HandMenuSwitcher : MonoBehaviour
     {
         obj.transform.SetParent(parentTransform);
         obj.transform.localPosition = Vector3.zero;
-        obj.transform.localRotation = Quaternion.identity;
+        obj.transform.localRotation = Quaternion.Euler(-30, 180, 0);
         obj.transform.localScale = new Vector3(0.003f, 0.003f, 0.003f);
     }
 }
