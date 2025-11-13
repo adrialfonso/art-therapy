@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.SceneManagement;
 
 // Controller to manage brush drawing on the whiteboard using XRControllers
 public class BrushController : MonoBehaviour
@@ -17,7 +18,9 @@ public class BrushController : MonoBehaviour
 
     [Header("Brush Settings Observer")]
     [SerializeField] private BrushSettingsObserver brushSettings;
+    [SerializeField] private EnvironmentSettingsObserver environmentSettings;
 
+    private Light directionalLight;
     private Whiteboard whiteboard;
     private Color[] brushColors;
     private List<IMarkerStrategy> strategies;
@@ -40,6 +43,9 @@ public class BrushController : MonoBehaviour
 
         // Initialize brush colors
         brushColors = Enumerable.Repeat(brushSettings.BrushColor, brushSettings.BrushSize * brushSettings.BrushSize).ToArray();
+
+        // Find the directional light in the scene
+        directionalLight = FindObjectsOfType<Light>().FirstOrDefault(l => l.type == LightType.Directional);
 
         InitializeMarkerStrategies();
     }
@@ -129,6 +135,34 @@ public class BrushController : MonoBehaviour
             currentStrategy = strategies[index];
     }
 
+    // Listener for changes in the direct light of the environment
+    private void OnDirectLightChanged(float intensity)
+    {
+        if (directionalLight != null)
+            directionalLight.intensity = intensity;
+    }
+
+    // Listener for changes in the ambient light of the environment
+    private void OnAmbientLightChanged(float intensity)
+    {
+        RenderSettings.ambientIntensity = intensity;
+    }
+
+    // Listener for scene load events to update directional light reference
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        FindDirectionalLight();
+    }
+
+    // Find and update the directional light reference in the scene
+    private void FindDirectionalLight()
+    {
+        directionalLight = FindObjectsOfType<Light>().FirstOrDefault(l => l.type == LightType.Directional);
+
+        OnDirectLightChanged(environmentSettings.DirectLightIntensity);
+        OnAmbientLightChanged(environmentSettings.AmbientLightIntensity);
+    }
+
     // Initialize subscriptions to observer events
     private void InitializeObserverSubscriptions()
     {
@@ -155,6 +189,14 @@ public class BrushController : MonoBehaviour
             rightController.OnErasePressed += ToggleEraseMode;
             rightController.OnUndoPressed += UndoWhiteboard;
         }
+
+        if (environmentSettings != null)
+        {
+            environmentSettings.OnDirectLightChanged += OnDirectLightChanged;
+            environmentSettings.OnAmbientLightChanged += OnAmbientLightChanged;
+        }
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     // Initialize available marker strategies
