@@ -18,7 +18,16 @@ public class BrushController : MonoBehaviour
 
     [Header("Brush Settings Observer")]
     [SerializeField] private BrushSettingsObserver brushSettings;
+    
+    [Header("Environment Settings Observer")]
     [SerializeField] private EnvironmentSettingsObserver environmentSettings;
+
+    [Header("Skybox Options")]
+    [SerializeField] private Material[] skyboxOptions;
+
+    [Header("Ambient Music Options")]
+    [SerializeField] private AudioClip[] ambientMusicOptions;
+    [SerializeField] private AudioSource ambientSource;
 
     private Light directionalLight;
     private Whiteboard whiteboard;
@@ -48,6 +57,8 @@ public class BrushController : MonoBehaviour
         directionalLight = FindObjectsOfType<Light>().FirstOrDefault(l => l.type == LightType.Directional);
 
         InitializeMarkerStrategies();
+        SelectRandomSkybox();
+        SelectRandomAmbientMusic();
     }
 
     private void Update()
@@ -151,18 +162,46 @@ public class BrushController : MonoBehaviour
     // Listener for scene load events to update directional light reference
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        FindDirectionalLight();
-    }
-
-    // Find and update the directional light reference in the scene
-    private void FindDirectionalLight()
-    {
         directionalLight = FindObjectsOfType<Light>().FirstOrDefault(l => l.type == LightType.Directional);
 
         OnDirectLightChanged(environmentSettings.DirectLightIntensity);
         OnAmbientLightChanged(environmentSettings.AmbientLightIntensity);
     }
 
+    // Listener for changes in ambient volume of the environment
+    private void OnAmbientVolumeChanged(float volume)
+    {
+        if (ambientSource != null)
+            ambientSource.volume = volume;
+    }
+
+    // Select random skybox (button triggered)
+    public void SelectRandomSkybox()
+    {
+        if (skyboxOptions == null || skyboxOptions.Length == 0) return;
+        int index = Random.Range(0, skyboxOptions.Length);
+        RenderSettings.skybox = skyboxOptions[index];
+        DynamicGI.UpdateEnvironment();
+    }
+
+    // Select random ambient music (button triggered)
+    public void SelectRandomAmbientMusic()
+    {
+        if (ambientMusicOptions == null || ambientMusicOptions.Length == 0) return;
+
+        if (ambientSource == null)
+            ambientSource = gameObject.AddComponent<AudioSource>();
+
+        int index = Random.Range(0, ambientMusicOptions.Length);
+
+        ambientSource.clip = ambientMusicOptions[index];
+        ambientSource.loop = true;
+        ambientSource.volume = 0.1f;
+        ambientSource.playOnAwake = false;
+        ambientSource.spatialBlend = 0f;
+        ambientSource.Play();
+    }
+    
     // Initialize subscriptions to observer events
     private void InitializeObserverSubscriptions()
     {
@@ -194,6 +233,7 @@ public class BrushController : MonoBehaviour
         {
             environmentSettings.OnDirectLightChanged += OnDirectLightChanged;
             environmentSettings.OnAmbientLightChanged += OnAmbientLightChanged;
+            environmentSettings.OnAmbientVolumeChanged += OnAmbientVolumeChanged;
         }
 
         SceneManager.sceneLoaded += OnSceneLoaded;
