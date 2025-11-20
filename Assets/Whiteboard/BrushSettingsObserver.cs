@@ -10,6 +10,7 @@ public class BrushSettingsObserver : MonoBehaviour
     public event Action<int> OnBrushSizeChanged;
     public event Action<Color> OnBrushColorChanged;
     public event Action<int> OnStrategyChanged;
+    public event Action<bool> On3DModeChanged;
 
     [Header("Brush Properties")]
     [SerializeField] private int brushSize = 50;
@@ -93,6 +94,12 @@ public class BrushSettingsObserver : MonoBehaviour
     {
         strategyIndex = index;
         OnStrategyChanged?.Invoke(strategyIndex);
+    }
+
+    // Invoked to toggle 3D drawing mode
+    public void Set3DMode(bool active)
+    {
+        On3DModeChanged?.Invoke(active);
     }
 
     // Initialize UI elements and their listeners

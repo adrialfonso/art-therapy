@@ -29,6 +29,14 @@ public class BrushController : MonoBehaviour
     [SerializeField] private AudioClip[] ambientMusicOptions;
     [SerializeField] private AudioSource ambientSource;
 
+    [Header("3D Mode")]
+    public Transform controllerTransform;    
+    public Material drawingMaterial;
+    public float lineWidth = 0.01f;    
+    private LineRenderer currentLine;
+    private int index;
+    private bool is3DMode = false;
+
     private Light directionalLight;
     private Whiteboard whiteboard;
     private Color[] brushColors;
@@ -63,10 +71,55 @@ public class BrushController : MonoBehaviour
 
     private void Update()
     {
-        HandleDrawing(leftState);
-        HandleDrawing(rightState);
+        if (is3DMode)
+        {
+            HandleDrawing3D();
+        }
+        else
+        {
+            HandleDrawing(leftState);
+            HandleDrawing(rightState);
+        }
     }
 
+    private void HandleDrawing3D()
+    {
+        bool isDrawing = leftState.isDrawing || rightState.isDrawing;
+
+        if (isDrawing)
+        {
+            if (currentLine == null)
+            {
+                index = 0;
+
+                currentLine = new GameObject("Line").AddComponent<LineRenderer>();
+                currentLine.material = drawingMaterial;
+                currentLine.startWidth = currentLine.endWidth = lineWidth;
+
+                currentLine.positionCount = 1;
+                currentLine.SetPosition(0, controllerTransform.position);
+            }
+            else
+            {
+                float distance = Vector3.Distance(
+                    currentLine.GetPosition(index),
+                    controllerTransform.position
+                );
+
+                if (distance > 0.01f)
+                {
+                    index++;
+                    currentLine.positionCount = index + 1;
+                    currentLine.SetPosition(index, controllerTransform.position);
+                }
+            }
+        }
+        else
+        {
+            currentLine = null;
+        }
+    }
+    
     // Handle drawing logic for a given controller state
     private void HandleDrawing(XRControllerState state)
     {
@@ -118,6 +171,12 @@ public class BrushController : MonoBehaviour
     private void ToggleEraseMode()
     {
         isErasing = !isErasing;
+    }
+
+    // Toggle between 2D and 3D drawing modes (observer pattern)
+    private void Toggle3DMode(bool active)
+    {
+        is3DMode = active;
     }
 
     // Perform undo on the whiteboard (observer pattern)
@@ -211,6 +270,7 @@ public class BrushController : MonoBehaviour
             brushSettings.OnBrushSizeChanged += OnBrushSizeChanged;
             brushSettings.OnBrushColorChanged += OnBrushColorChanged;
             brushSettings.OnStrategyChanged += OnStrategyChanged;
+            brushSettings.On3DModeChanged += Toggle3DMode;
         }
 
         if (leftController != null)
