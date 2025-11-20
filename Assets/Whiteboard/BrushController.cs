@@ -30,9 +30,10 @@ public class BrushController : MonoBehaviour
     [SerializeField] private AudioSource ambientSource;
 
     [Header("3D Mode")]
-    public Transform controllerTransform;    
-    public Material drawingMaterial;
-    public float lineWidth = 0.01f;    
+    [SerializeField] public Transform rightTipTransform;   
+    [SerializeField] public Transform leftTipTransform; 
+    [SerializeField] public LineRenderer linePrefab;
+    
     private LineRenderer currentLine;
     private int index;
     private bool is3DMode = false;
@@ -82,35 +83,38 @@ public class BrushController : MonoBehaviour
         }
     }
 
+    // Handle 3D drawing logic using LineRenderer
     private void HandleDrawing3D()
     {
         bool isDrawing = leftState.isDrawing || rightState.isDrawing;
 
         if (isDrawing)
         {
+            Transform drawingTip = leftState.isDrawing ? leftTipTransform : rightTipTransform;
+
             if (currentLine == null)
             {
                 index = 0;
 
-                currentLine = new GameObject("Line").AddComponent<LineRenderer>();
-                currentLine.material = drawingMaterial;
-                currentLine.startWidth = currentLine.endWidth = lineWidth;
+                currentLine = Instantiate(linePrefab);
+                currentLine.material.color = brushSettings.BrushColor;
+                currentLine.startWidth = currentLine.endWidth = brushSettings.BrushSize * 0.01f;
 
                 currentLine.positionCount = 1;
-                currentLine.SetPosition(0, controllerTransform.position);
+                currentLine.SetPosition(0, drawingTip.position);
             }
             else
             {
                 float distance = Vector3.Distance(
                     currentLine.GetPosition(index),
-                    controllerTransform.position
+                    drawingTip.position
                 );
 
-                if (distance > 0.01f)
+                if (distance > 0.02f)
                 {
                     index++;
                     currentLine.positionCount = index + 1;
-                    currentLine.SetPosition(index, controllerTransform.position);
+                    currentLine.SetPosition(index, drawingTip.position);
                 }
             }
         }
