@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.SceneManagement;
 
 // Controller to manage brush drawing on the whiteboard using XRControllers
 public class BrushController : MonoBehaviour
@@ -17,15 +18,26 @@ public class BrushController : MonoBehaviour
 
     [Header("Brush Settings Observer")]
     [SerializeField] private BrushSettingsObserver brushSettings;
+    
+    [Header("Environment Settings Observer")]
+    [SerializeField] private EnvironmentSettingsObserver environmentSettings;
 
+    [Header("Skybox Options")]
+    [SerializeField] private Material[] skyboxOptions;
+
+    [Header("Ambient Music Options")]
+    [SerializeField] private AudioClip[] ambientMusicOptions;
+    [SerializeField] private AudioSource ambientSource;
+
+    private Light directionalLight;
     private Whiteboard whiteboard;
     private Color[] brushColors;
     private List<IMarkerStrategy> strategies;
     private IMarkerStrategy currentStrategy;
     private bool isErasing;
 
-    private XRControllerState leftState;
-    private XRControllerState rightState;
+    public XRControllerState leftState;
+    public XRControllerState rightState;
 
     private void OnEnable()
     {   
@@ -41,7 +53,12 @@ public class BrushController : MonoBehaviour
         // Initialize brush colors
         brushColors = Enumerable.Repeat(brushSettings.BrushColor, brushSettings.BrushSize * brushSettings.BrushSize).ToArray();
 
+        // Find the directional light in the scene
+        directionalLight = FindObjectsOfType<Light>().FirstOrDefault(l => l.type == LightType.Directional);
+
         InitializeMarkerStrategies();
+        SelectRandomSkybox();
+        SelectRandomAmbientMusic();
     }
 
     private void Update()
@@ -129,6 +146,62 @@ public class BrushController : MonoBehaviour
             currentStrategy = strategies[index];
     }
 
+    // Listener for changes in the direct light of the environment
+    private void OnDirectLightChanged(float intensity)
+    {
+        if (directionalLight != null)
+            directionalLight.intensity = intensity;
+    }
+
+    // Listener for changes in the ambient light of the environment
+    private void OnAmbientLightChanged(float intensity)
+    {
+        RenderSettings.ambientIntensity = intensity;
+    }
+
+    // Listener for scene load events to update directional light reference
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        directionalLight = FindObjectsOfType<Light>().FirstOrDefault(l => l.type == LightType.Directional);
+
+        OnDirectLightChanged(environmentSettings.DirectLightIntensity);
+        OnAmbientLightChanged(environmentSettings.AmbientLightIntensity);
+    }
+
+    // Listener for changes in ambient volume of the environment
+    private void OnAmbientVolumeChanged(float volume)
+    {
+        if (ambientSource != null)
+            ambientSource.volume = volume;
+    }
+
+    // Select random skybox (button triggered)
+    public void SelectRandomSkybox()
+    {
+        if (skyboxOptions == null || skyboxOptions.Length == 0) return;
+        int index = Random.Range(0, skyboxOptions.Length);
+        RenderSettings.skybox = skyboxOptions[index];
+        DynamicGI.UpdateEnvironment();
+    }
+
+    // Select random ambient music (button triggered)
+    public void SelectRandomAmbientMusic()
+    {
+        if (ambientMusicOptions == null || ambientMusicOptions.Length == 0) return;
+
+        if (ambientSource == null)
+            ambientSource = gameObject.AddComponent<AudioSource>();
+
+        int index = Random.Range(0, ambientMusicOptions.Length);
+
+        ambientSource.clip = ambientMusicOptions[index];
+        ambientSource.loop = true;
+        ambientSource.volume = 0.1f;
+        ambientSource.playOnAwake = false;
+        ambientSource.spatialBlend = 0f;
+        ambientSource.Play();
+    }
+    
     // Initialize subscriptions to observer events
     private void InitializeObserverSubscriptions()
     {
@@ -155,6 +228,15 @@ public class BrushController : MonoBehaviour
             rightController.OnErasePressed += ToggleEraseMode;
             rightController.OnUndoPressed += UndoWhiteboard;
         }
+
+        if (environmentSettings != null)
+        {
+            environmentSettings.OnDirectLightChanged += OnDirectLightChanged;
+            environmentSettings.OnAmbientLightChanged += OnAmbientLightChanged;
+            environmentSettings.OnAmbientVolumeChanged += OnAmbientVolumeChanged;
+        }
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     // Initialize available marker strategies
