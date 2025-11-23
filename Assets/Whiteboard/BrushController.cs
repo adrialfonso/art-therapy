@@ -84,6 +84,9 @@ public class BrushController : MonoBehaviour
     }
 
     // Handle 3D drawing logic using LineRenderer
+    private float snapRadius = 0.03f;
+    private List<Vector3> existingPoints = new List<Vector3>();
+
     private void HandleDrawing3D()
     {
         bool isDrawing = leftState.isDrawing || rightState.isDrawing;
@@ -95,11 +98,12 @@ public class BrushController : MonoBehaviour
             if (currentLine == null)
             {
                 index = 0;
-
+                
+                // Start a new line
                 currentLine = Instantiate(linePrefab);
                 currentLine.material.color = brushSettings.BrushColor;
 
-                float baseWidth = brushSettings.BrushSize * 0.01f;
+                float baseWidth = brushSettings.BrushSize * 0.0025f;
 
                 AnimationCurve brushCurve = new AnimationCurve(
                     new Keyframe(0f, 0.5f),   
@@ -110,7 +114,20 @@ public class BrushController : MonoBehaviour
                 currentLine.widthMultiplier = baseWidth;
                 currentLine.widthCurve = brushCurve;
                 currentLine.positionCount = 1;
-                currentLine.SetPosition(0, drawingTip.position);
+
+                // Connect with existing points if close enough (start point)
+                Vector3 startPos = drawingTip.position;
+                foreach (var p in existingPoints)
+                {
+                    if (Vector3.Distance(p, drawingTip.position) <= snapRadius)
+                    {
+                        startPos = p;
+                        break;
+                    }
+                }
+
+                currentLine.SetPosition(0, startPos);
+                existingPoints.Add(startPos);
             }
             else
             {
@@ -119,16 +136,32 @@ public class BrushController : MonoBehaviour
                     drawingTip.position
                 );
 
+                // Add new point if moved enough
                 if (distance > 0.02f)
                 {
                     index++;
                     currentLine.positionCount = index + 1;
                     currentLine.SetPosition(index, drawingTip.position);
+                    existingPoints.Add(drawingTip.position);
                 }
             }
         }
         else
         {
+            if (currentLine != null)
+            {
+                // Connect with existing points if close enough (end point)
+                Vector3 lastPos = currentLine.GetPosition(index);
+                foreach (var p in existingPoints)
+                {
+                    if (Vector3.Distance(p, lastPos) <= snapRadius)
+                    {
+                        currentLine.SetPosition(index, p);
+                        break;
+                    }
+                }
+            }
+
             currentLine = null;
         }
     }
