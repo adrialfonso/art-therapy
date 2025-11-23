@@ -98,8 +98,17 @@ public class BrushController : MonoBehaviour
 
                 currentLine = Instantiate(linePrefab);
                 currentLine.material.color = brushSettings.BrushColor;
-                currentLine.startWidth = currentLine.endWidth = brushSettings.BrushSize * 0.01f;
 
+                float baseWidth = brushSettings.BrushSize * 0.01f;
+
+                AnimationCurve brushCurve = new AnimationCurve(
+                    new Keyframe(0f, 0.5f),   
+                    new Keyframe(0.5f, 1f),   
+                    new Keyframe(1f, 0.5f)    
+                );
+
+                currentLine.widthMultiplier = baseWidth;
+                currentLine.widthCurve = brushCurve;
                 currentLine.positionCount = 1;
                 currentLine.SetPosition(0, drawingTip.position);
             }
