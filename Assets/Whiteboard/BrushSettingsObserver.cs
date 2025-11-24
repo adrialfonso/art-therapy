@@ -11,6 +11,7 @@ public class BrushSettingsObserver : MonoBehaviour
     public event Action<Color> OnBrushColorChanged;
     public event Action<int> OnStrategyChanged;
     public event Action<bool> On3DModeChanged;
+    public event Action OnSaveArtwork;
 
     [Header("Brush Properties")]
     [SerializeField] private int brushSize = 50;
@@ -100,6 +101,12 @@ public class BrushSettingsObserver : MonoBehaviour
     public void Set3DMode(bool active)
     {
         On3DModeChanged?.Invoke(active);
+    }
+
+    // Invoked when Save Artwork button is pressed
+    public void SaveArtwork()
+    {
+        OnSaveArtwork?.Invoke();
     }
 
     // Initialize UI elements and their listeners

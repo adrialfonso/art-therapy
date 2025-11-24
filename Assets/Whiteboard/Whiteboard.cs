@@ -50,4 +50,9 @@ public class Whiteboard : MonoBehaviour
             texture.Apply();
         }
     }
+
+    public Texture2D GetTexture()
+    {
+        return texture;
+    }
 }

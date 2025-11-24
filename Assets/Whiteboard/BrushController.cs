@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.SceneManagement;
+using System.IO;
 
 // Controller to manage brush drawing on the whiteboard using XRControllers
 public class BrushController : MonoBehaviour
@@ -321,7 +322,24 @@ public class BrushController : MonoBehaviour
         ambientSource.spatialBlend = 0f;
         ambientSource.Play();
     }
-    
+
+    // Save current artwork to persistent storage (observer pattern)
+    private void SaveArtwork()
+    {
+        Texture2D texture = whiteboard.GetTexture();
+
+        byte[] bytes = texture.EncodeToPNG();
+        string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
+
+        if (!Directory.Exists(folderPath))
+            Directory.CreateDirectory(folderPath);
+
+        string fileName = $"Artwork_{System.DateTime.Now:yyyyMMdd_HHmmss}.png";
+        string fullPath = Path.Combine(folderPath, fileName);
+
+        File.WriteAllBytes(fullPath, bytes);
+    }
+
     // Initialize subscriptions to observer events
     private void InitializeObserverSubscriptions()
     {
@@ -332,6 +350,7 @@ public class BrushController : MonoBehaviour
             brushSettings.OnBrushColorChanged += OnBrushColorChanged;
             brushSettings.OnStrategyChanged += OnStrategyChanged;
             brushSettings.On3DModeChanged += Toggle3DMode;
+            brushSettings.OnSaveArtwork += SaveArtwork;
         }
 
         if (leftController != null)
