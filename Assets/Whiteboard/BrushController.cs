@@ -29,7 +29,22 @@ public class BrushController : MonoBehaviour
     [SerializeField] private AudioClip[] ambientMusicOptions;
     [SerializeField] private AudioSource ambientSource;
 
+    [Header("3D Mode")]
+    [SerializeField] public Transform rightTipTransform;   
+    [SerializeField] public Transform leftTipTransform; 
+    [SerializeField] public LineRenderer linePrefab;
+
     private Light directionalLight;
+    
+    // 3D references
+    private LineRenderer currentLine;
+    private List<Vector3> existingPoints = new List<Vector3>();
+    private List<LineRenderer> lineHistory = new List<LineRenderer>();
+    private int index;
+    private bool is3DMode = false;
+    private float snapRadius = 0.03f;
+
+    // 2D references
     private Whiteboard whiteboard;
     private Color[] brushColors;
     private List<IMarkerStrategy> strategies;
@@ -63,8 +78,94 @@ public class BrushController : MonoBehaviour
 
     private void Update()
     {
-        HandleDrawing(leftState);
-        HandleDrawing(rightState);
+        if (is3DMode)
+        {
+            HandleDrawing3D();
+        }
+        else
+        {
+            HandleDrawing(leftState);
+            HandleDrawing(rightState);
+        }
+    }
+
+    // Handle 3D drawing logic using LineRenderer
+    private void HandleDrawing3D()
+    {
+        bool isDrawing = leftState.isDrawing || rightState.isDrawing;
+
+        if (isDrawing)
+        {
+            Transform drawingTip = leftState.isDrawing ? leftTipTransform : rightTipTransform;
+
+            if (currentLine == null)
+            {
+                index = 0;
+                
+                // Start a new line
+                currentLine = Instantiate(linePrefab);
+                currentLine.material.color = brushSettings.BrushColor;
+
+                float baseWidth = brushSettings.BrushSize * 0.0025f;
+                AnimationCurve brushCurve = new AnimationCurve(
+                    new Keyframe(0f, 0.5f),
+                    new Keyframe(0.5f, 1f),
+                    new Keyframe(1f, 0.5f)
+                );
+
+                currentLine.widthMultiplier = baseWidth;
+                currentLine.widthCurve = brushCurve;
+                currentLine.positionCount = 1;
+
+                // Connect with existing points if close enough (start point)
+                Vector3 startPos = drawingTip.position;
+                foreach (var p in existingPoints)
+                {
+                    if (Vector3.Distance(p, drawingTip.position) <= snapRadius)
+                    {
+                        startPos = p;
+                        break;
+                    }
+                }
+
+                currentLine.SetPosition(0, startPos);
+                existingPoints.Add(startPos);
+
+                // Update lineHistory
+                lineHistory.Add(currentLine);
+            }
+            else
+            {
+                float distance = Vector3.Distance(currentLine.GetPosition(index), drawingTip.position);
+
+                // Add new point if moved enough
+                if (distance > 0.02f)
+                {
+                    index++;
+                    currentLine.positionCount = index + 1;
+                    currentLine.SetPosition(index, drawingTip.position);
+                    existingPoints.Add(drawingTip.position);
+                }
+            }
+        }
+        else
+        {
+            if (currentLine != null)
+            {
+                // Connect with existing points if close enough (end point)
+                Vector3 lastPos = currentLine.GetPosition(index);
+                foreach (var p in existingPoints)
+                {
+                    if (Vector3.Distance(p, lastPos) <= snapRadius)
+                    {
+                        currentLine.SetPosition(index, p);
+                        break;
+                    }
+                }
+            }
+
+            currentLine = null;
+        }
     }
 
     // Handle drawing logic for a given controller state
@@ -120,11 +221,30 @@ public class BrushController : MonoBehaviour
         isErasing = !isErasing;
     }
 
-    // Perform undo on the whiteboard (observer pattern)
-    private void UndoWhiteboard()
+    // Toggle between 2D and 3D drawing modes (observer pattern)
+    private void Toggle3DMode(bool active)
     {
-        if (whiteboard != null)
-            whiteboard.Undo();
+        is3DMode = active;
+    }
+
+    // Perform undo (observer pattern)
+    private void Undo()
+    {
+        if (is3DMode)
+        {
+            if (lineHistory.Count > 0)
+            {
+                // Destroy the last 3D line
+                LineRenderer lastLine = lineHistory[lineHistory.Count - 1];
+                lineHistory.RemoveAt(lineHistory.Count - 1);
+                Destroy(lastLine.gameObject);
+            }
+        }
+        else
+        {
+            if (whiteboard != null)
+                whiteboard.Undo();
+        }
     }
 
     // Listener for brush size changes (observer pattern)
@@ -211,6 +331,7 @@ public class BrushController : MonoBehaviour
             brushSettings.OnBrushSizeChanged += OnBrushSizeChanged;
             brushSettings.OnBrushColorChanged += OnBrushColorChanged;
             brushSettings.OnStrategyChanged += OnStrategyChanged;
+            brushSettings.On3DModeChanged += Toggle3DMode;
         }
 
         if (leftController != null)
@@ -218,7 +339,7 @@ public class BrushController : MonoBehaviour
             leftController.OnDrawPressed += () => leftState.isDrawing = true;
             leftController.OnDrawReleased += () => leftState.isDrawing = false;
             leftController.OnErasePressed += ToggleEraseMode;
-            leftController.OnUndoPressed += UndoWhiteboard;
+            leftController.OnUndoPressed += Undo;
         }
 
         if (rightController != null)
@@ -226,7 +347,7 @@ public class BrushController : MonoBehaviour
             rightController.OnDrawPressed += () => rightState.isDrawing = true;
             rightController.OnDrawReleased += () => rightState.isDrawing = false;
             rightController.OnErasePressed += ToggleEraseMode;
-            rightController.OnUndoPressed += UndoWhiteboard;
+            rightController.OnUndoPressed += Undo;
         }
 
         if (environmentSettings != null)
