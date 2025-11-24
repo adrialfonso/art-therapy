@@ -52,6 +52,9 @@ public class BrushController : MonoBehaviour
     private IMarkerStrategy currentStrategy;
     private bool isErasing;
 
+    private int currentArtworkIndex = -1; 
+    private string[] savedArtworks; 
+
     public XRControllerState leftState;
     public XRControllerState rightState;
 
@@ -338,6 +341,23 @@ public class BrushController : MonoBehaviour
         string fullPath = Path.Combine(folderPath, fileName);
 
         File.WriteAllBytes(fullPath, bytes);
+    }   
+
+    // Load artworks from storage (observer pattern)
+    private void LoadArtwork()
+    {
+        string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
+
+        savedArtworks = Directory.GetFiles(folderPath, "*.png").OrderBy(f => File.GetCreationTime(f)).ToArray();
+        currentArtworkIndex = (currentArtworkIndex + 1) % savedArtworks.Length;
+
+        string fullPath = savedArtworks[currentArtworkIndex];
+        byte[] fileData = File.ReadAllBytes(fullPath);
+
+        Texture2D loadedTexture = new Texture2D(2, 2);
+        loadedTexture.LoadImage(fileData);
+
+        whiteboard.SetTexture(loadedTexture);
     }
 
     // Initialize subscriptions to observer events
@@ -351,6 +371,7 @@ public class BrushController : MonoBehaviour
             brushSettings.OnStrategyChanged += OnStrategyChanged;
             brushSettings.On3DModeChanged += Toggle3DMode;
             brushSettings.OnSaveArtwork += SaveArtwork;
+            brushSettings.OnLoadArtwork += LoadArtwork;
         }
 
         if (leftController != null)

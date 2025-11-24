@@ -10467,7 +10467,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 8011878002815430114}
         m_TargetAssemblyTypeName: BrushSettingsObserver, Assembly-CSharp
-        m_MethodName: 
+        m_MethodName: LoadArtwork
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
