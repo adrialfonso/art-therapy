@@ -53,7 +53,7 @@ public class BrushController : MonoBehaviour
     private bool isErasing;
 
     private int currentArtworkIndex = -1; 
-    private string[] savedArtworks; 
+    private string[] savedWhiteboardArtworks; 
 
     public XRControllerState leftState;
     public XRControllerState rightState;
@@ -338,8 +338,29 @@ public class BrushController : MonoBehaviour
             if (!Directory.Exists(folderPath))
                 Directory.CreateDirectory(folderPath);
 
-            string fileName = $"Artwork_{System.DateTime.Now:yyyyMMdd_HHmmss}.png";
+            string fileName;
+            bool isOverwrite = currentArtworkIndex >= 0 && savedWhiteboardArtworks != null && currentArtworkIndex < savedWhiteboardArtworks.Length;
+
+            // If already loaded, overwrite the file
+            if (isOverwrite)
+            {
+                fileName = Path.GetFileName(savedWhiteboardArtworks[currentArtworkIndex]);
+            }
+            else
+            {
+                fileName = $"Artwork_{System.DateTime.Now:yyyyMMdd_HHmmss}.png";
+            }
+
             File.WriteAllBytes(Path.Combine(folderPath, fileName), bytes);
+
+            // Update the list of artworks
+            savedWhiteboardArtworks = Directory.GetFiles(folderPath, "*.png");
+
+            // If it's a new file, update the index to the end
+            if (!isOverwrite)
+            {
+                currentArtworkIndex = savedWhiteboardArtworks.Length - 1;
+            }
         }
         else
         {
@@ -364,7 +385,19 @@ public class BrushController : MonoBehaviour
             if (!Directory.Exists(folderPath))
                 Directory.CreateDirectory(folderPath);
 
-            string fileName = $"Artwork3D_{System.DateTime.Now:yyyyMMdd_HHmmss}.json";
+            string fileName;
+
+            // If already loaded, overwrite the file
+            string[] files = Directory.GetFiles(folderPath, "*.json");
+            if (currentArtworkIndex >= 0 && files.Length > 0 && currentArtworkIndex < files.Length)
+            {
+                fileName = Path.GetFileName(files[currentArtworkIndex]);
+            }
+            else
+            {
+                fileName = $"Artwork3D_{System.DateTime.Now:yyyyMMdd_HHmmss}.json";
+            }
+
             File.WriteAllText(Path.Combine(folderPath, fileName), json);
         }
     }
@@ -376,12 +409,12 @@ public class BrushController : MonoBehaviour
         {
             string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
 
-            savedArtworks = Directory.GetFiles(folderPath, "*.png").OrderBy(f => File.GetCreationTime(f)).ToArray();
-            if (savedArtworks.Length == 0) return;
+            savedWhiteboardArtworks = Directory.GetFiles(folderPath, "*.png").OrderBy(f => File.GetCreationTime(f)).ToArray();
+            if (savedWhiteboardArtworks.Length == 0) return;
 
-            currentArtworkIndex = (currentArtworkIndex + 1) % savedArtworks.Length;
+            currentArtworkIndex = (currentArtworkIndex + 1) % savedWhiteboardArtworks.Length;
 
-            byte[] fileData = File.ReadAllBytes(savedArtworks[currentArtworkIndex]);
+            byte[] fileData = File.ReadAllBytes(savedWhiteboardArtworks[currentArtworkIndex]);
             Texture2D loadedTexture = new Texture2D(2, 2);
             loadedTexture.LoadImage(fileData);
 
