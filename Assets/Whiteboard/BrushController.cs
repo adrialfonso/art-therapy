@@ -329,35 +329,97 @@ public class BrushController : MonoBehaviour
     // Save current artwork to persistent storage (observer pattern)
     private void SaveArtwork()
     {
-        Texture2D texture = whiteboard.GetTexture();
+        if (!is3DMode)
+        {
+            Texture2D texture = whiteboard.GetTexture();
+            byte[] bytes = texture.EncodeToPNG();
+            string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
 
-        byte[] bytes = texture.EncodeToPNG();
-        string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
+            if (!Directory.Exists(folderPath))
+                Directory.CreateDirectory(folderPath);
 
-        if (!Directory.Exists(folderPath))
-            Directory.CreateDirectory(folderPath);
+            string fileName = $"Artwork_{System.DateTime.Now:yyyyMMdd_HHmmss}.png";
+            File.WriteAllBytes(Path.Combine(folderPath, fileName), bytes);
+        }
+        else
+        {
+            LineCollection collection = new LineCollection();
 
-        string fileName = $"Artwork_{System.DateTime.Now:yyyyMMdd_HHmmss}.png";
-        string fullPath = Path.Combine(folderPath, fileName);
+            // Serialize each line's data
+            foreach (var line in lineHistory)
+            {
+                LineData data = new LineData();
+                data.points = new Vector3[line.positionCount];
+                line.GetPositions(data.points);
+                data.color = line.material.color;
+                data.width = line.widthMultiplier;
+                data.widthCurve = line.widthCurve;
 
-        File.WriteAllBytes(fullPath, bytes);
-    }   
+                collection.lines.Add(data);
+            }
+
+            string json = JsonUtility.ToJson(collection, true);
+
+            string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "3D");
+            if (!Directory.Exists(folderPath))
+                Directory.CreateDirectory(folderPath);
+
+            string fileName = $"Artwork3D_{System.DateTime.Now:yyyyMMdd_HHmmss}.json";
+            File.WriteAllText(Path.Combine(folderPath, fileName), json);
+        }
+    }
 
     // Load artworks from storage (observer pattern)
     private void LoadArtwork()
     {
-        string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
+        if (!is3DMode)
+        {
+            string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
 
-        savedArtworks = Directory.GetFiles(folderPath, "*.png").OrderBy(f => File.GetCreationTime(f)).ToArray();
-        currentArtworkIndex = (currentArtworkIndex + 1) % savedArtworks.Length;
+            savedArtworks = Directory.GetFiles(folderPath, "*.png").OrderBy(f => File.GetCreationTime(f)).ToArray();
+            if (savedArtworks.Length == 0) return;
 
-        string fullPath = savedArtworks[currentArtworkIndex];
-        byte[] fileData = File.ReadAllBytes(fullPath);
+            currentArtworkIndex = (currentArtworkIndex + 1) % savedArtworks.Length;
 
-        Texture2D loadedTexture = new Texture2D(2, 2);
-        loadedTexture.LoadImage(fileData);
+            byte[] fileData = File.ReadAllBytes(savedArtworks[currentArtworkIndex]);
+            Texture2D loadedTexture = new Texture2D(2, 2);
+            loadedTexture.LoadImage(fileData);
 
-        whiteboard.SetTexture(loadedTexture);
+            whiteboard.SetTexture(loadedTexture);
+        }
+        else
+        {
+            string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "3D");
+            string[] files = Directory.GetFiles(folderPath, "*.json");
+
+            if (files.Length == 0) return;
+
+            currentArtworkIndex = (currentArtworkIndex + 1) % files.Length;
+
+            string json = File.ReadAllText(files[currentArtworkIndex]);
+            LineCollection collection = JsonUtility.FromJson<LineCollection>(json);
+
+            // Clear current lines
+            foreach (var line in lineHistory)
+                Destroy(line.gameObject);
+
+            lineHistory.Clear();
+            existingPoints.Clear();
+
+            // Reconstruct lines from loaded data
+            foreach (var data in collection.lines)
+            {
+                LineRenderer newLine = Instantiate(linePrefab);
+                newLine.positionCount = data.points.Length;
+                newLine.SetPositions(data.points);
+                newLine.material.color = data.color;
+                newLine.widthMultiplier = data.width;
+                newLine.widthCurve = data.widthCurve;
+
+                lineHistory.Add(newLine);
+                existingPoints.AddRange(data.points);
+            }
+        }
     }
 
     // Initialize subscriptions to observer events
