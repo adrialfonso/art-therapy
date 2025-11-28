@@ -6,61 +6,359 @@ using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.SceneManagement;
 using System.IO;
 
-// Controller to manage brush drawing on the whiteboard using XRControllers
+// Abstract class to handle artwork for 2D and 3D modes
+public abstract class ArtworkHandler
+{
+    protected BrushController controller;
+
+    public ArtworkHandler(BrushController controller)
+    {
+        this.controller = controller;
+    }
+
+    public abstract void HandleDrawing();
+    public abstract void Undo();
+    public abstract void SaveArtwork();
+    public abstract void LoadArtwork();
+}
+
+// Implementation for 2D whiteboard drawing
+public class ArtworkHandler2D : ArtworkHandler
+{
+    public ArtworkHandler2D(BrushController controller) : base(controller) { }
+
+    public override void HandleDrawing()
+    {
+        bool isDrawing = controller.isDrawingLeft || controller.isDrawingRight;
+
+        // If not drawing, reset state and return
+        if (!isDrawing)
+        {
+            controller.touchedLastFrame = false;
+            controller.savedUndoState = false;
+            return;
+        }
+
+        XRRayInteractor activeRay = controller.isDrawingLeft ? controller.leftRay : controller.rightRay;
+
+        // Perform raycast and handle drawing
+        if (activeRay.TryGetCurrent3DRaycastHit(out RaycastHit hit))
+        {
+            if (!hit.transform.CompareTag("Whiteboard")) return;
+
+            Whiteboard hitBoard = hit.transform.GetComponent<Whiteboard>();
+            if (hitBoard != controller.whiteboard)
+            {
+                controller.whiteboard = hitBoard;
+                controller.savedUndoState = false;
+            }
+
+            Vector2 touchPos = new Vector2(hit.textureCoord.x * controller.whiteboard.textureSize.x,
+                                           hit.textureCoord.y * controller.whiteboard.textureSize.y);
+
+            // Save undo state if not already saved
+            if (!controller.savedUndoState)
+            {
+                controller.whiteboard.SaveUndoState();
+                controller.savedUndoState = true;
+            }
+
+            // Draw using the current strategy
+            if (controller.touchedLastFrame)
+            {
+                controller.currentStrategy.Draw(controller.whiteboard, touchPos, controller.lastTouchPos,
+                                                controller.brushSettings.BrushSize, controller.brushColors, controller.isErasing);
+            }
+
+            controller.lastTouchPos = touchPos;
+            controller.touchedLastFrame = true;
+        }
+        else
+        {
+            controller.touchedLastFrame = false;
+        }
+    }
+
+    public override void Undo()
+    {
+        if (controller.whiteboard != null)
+            controller.whiteboard.Undo();
+    }
+
+    public override void SaveArtwork()
+    {
+        Texture2D texture = controller.whiteboard.GetTexture();
+        byte[] bytes = texture.EncodeToPNG();
+        string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
+
+        if (!Directory.Exists(folderPath))
+            Directory.CreateDirectory(folderPath);
+
+        string fileName;
+        bool isOverwrite = controller.currentArtworkIndex >= 0 && controller.savedWhiteboardArtworks != null && controller.currentArtworkIndex < controller.savedWhiteboardArtworks.Length;
+
+        // If already loaded, overwrite the file
+        if (isOverwrite)
+        {
+            fileName = Path.GetFileName(controller.savedWhiteboardArtworks[controller.currentArtworkIndex]);
+        }
+        else
+        {
+            fileName = $"Artwork_{System.DateTime.Now:yyyyMMdd_HHmmss}.png";
+        }
+
+        File.WriteAllBytes(Path.Combine(folderPath, fileName), bytes);
+
+        // Update the list of artworks
+        controller.savedWhiteboardArtworks = Directory.GetFiles(folderPath, "*.png");
+
+        // If it's a new file, update the index to the end
+        if (!isOverwrite)
+            controller.currentArtworkIndex = controller.savedWhiteboardArtworks.Length - 1;
+    }
+
+    public override void LoadArtwork()
+    {
+        string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
+
+        controller.savedWhiteboardArtworks = Directory.GetFiles(folderPath, "*.png").OrderBy(f => File.GetCreationTime(f)).ToArray();
+        if (controller.savedWhiteboardArtworks.Length == 0) return;
+
+        controller.currentArtworkIndex = (controller.currentArtworkIndex + 1) % controller.savedWhiteboardArtworks.Length;
+
+        byte[] fileData = File.ReadAllBytes(controller.savedWhiteboardArtworks[controller.currentArtworkIndex]);
+        Texture2D loadedTexture = new Texture2D(2, 2);
+        loadedTexture.LoadImage(fileData);
+
+        controller.whiteboard.SetTexture(loadedTexture);
+    }
+}
+
+// Implementation for 3D drawing
+public class ArtworkHandler3D : ArtworkHandler
+{
+    public ArtworkHandler3D(BrushController controller) : base(controller) { }
+
+    public override void HandleDrawing()
+    {
+        bool isDrawing = controller.isDrawingLeft || controller.isDrawingRight;
+
+        if (isDrawing)
+        {
+            Transform drawingTip = controller.isDrawingLeft ? controller.leftTipTransform : controller.rightTipTransform;
+
+            if (controller.currentLine == null)
+            {
+                controller.index = 0;
+
+                // Start a new line
+                controller.currentLine = Object.Instantiate(controller.linePrefab);
+                controller.currentLine.material.color = controller.brushSettings.BrushColor;
+
+                float baseWidth = controller.brushSettings.BrushSize * 0.0025f;
+                AnimationCurve brushCurve = new AnimationCurve(
+                    new Keyframe(0f, 0.5f),
+                    new Keyframe(0.5f, 1f),
+                    new Keyframe(1f, 0.5f)
+                );
+
+                controller.currentLine.widthMultiplier = baseWidth;
+                controller.currentLine.widthCurve = brushCurve;
+                controller.currentLine.positionCount = 1;
+
+                // Connect with existing points if close enough (start point)
+                Vector3 startPos = drawingTip.position;
+                foreach (var p in controller.existingPoints)
+                {
+                    if (Vector3.Distance(p, drawingTip.position) <= controller.snapRadius)
+                    {
+                        startPos = p;
+                        break;
+                    }
+                }
+
+                controller.currentLine.SetPosition(0, startPos);
+                controller.existingPoints.Add(startPos);
+
+                // Update lineHistory
+                controller.lineHistory.Add(controller.currentLine);
+            }
+            else
+            {
+                float distance = Vector3.Distance(controller.currentLine.GetPosition(controller.index), drawingTip.position);
+
+                // Add new point if moved enough
+                if (distance > 0.02f)
+                {
+                    controller.index++;
+                    controller.currentLine.positionCount = controller.index + 1;
+                    controller.currentLine.SetPosition(controller.index, drawingTip.position);
+                    controller.existingPoints.Add(drawingTip.position);
+                }
+            }
+        }
+        else
+        {
+            if (controller.currentLine != null)
+            {
+                // Connect with existing points if close enough (end point)
+                Vector3 lastPos = controller.currentLine.GetPosition(controller.index);
+                foreach (var p in controller.existingPoints)
+                {
+                    if (Vector3.Distance(p, lastPos) <= controller.snapRadius)
+                    {
+                        controller.currentLine.SetPosition(controller.index, p);
+                        break;
+                    }
+                }
+            }
+
+            controller.currentLine = null;
+        }
+    }
+
+    public override void Undo()
+    {
+        if (controller.lineHistory.Count > 0)
+        {
+            // Destroy the last 3D line
+            LineRenderer lastLine = controller.lineHistory[controller.lineHistory.Count - 1];
+            controller.lineHistory.RemoveAt(controller.lineHistory.Count - 1);
+            Object.Destroy(lastLine.gameObject);
+        }
+    }
+
+    public override void SaveArtwork()
+    {
+        LineCollection collection = new LineCollection();
+
+        // Serialize each line's data
+        foreach (var line in controller.lineHistory)
+        {
+            LineData data = new LineData();
+            data.points = new Vector3[line.positionCount];
+            line.GetPositions(data.points);
+            data.color = line.material.color;
+            data.width = line.widthMultiplier;
+            data.widthCurve = line.widthCurve;
+
+            collection.lines.Add(data);
+        }
+
+        string json = JsonUtility.ToJson(collection, true);
+
+        string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "3D");
+        if (!Directory.Exists(folderPath))
+            Directory.CreateDirectory(folderPath);
+
+        string fileName;
+        string[] files = Directory.GetFiles(folderPath, "*.json");
+        if (controller.currentArtworkIndex >= 0 && files.Length > 0 && controller.currentArtworkIndex < files.Length)
+        {
+            fileName = Path.GetFileName(files[controller.currentArtworkIndex]);
+        }
+        else
+        {
+            fileName = $"Artwork3D_{System.DateTime.Now:yyyyMMdd_HHmmss}.json";
+        }
+
+        File.WriteAllText(Path.Combine(folderPath, fileName), json);
+    }
+
+    public override void LoadArtwork()
+    {
+        string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "3D");
+        string[] files = Directory.GetFiles(folderPath, "*.json");
+
+        if (files.Length == 0) return;
+
+        controller.currentArtworkIndex = (controller.currentArtworkIndex + 1) % files.Length;
+
+        string json = File.ReadAllText(files[controller.currentArtworkIndex]);
+        LineCollection collection = JsonUtility.FromJson<LineCollection>(json);
+
+        // Clear current lines
+        foreach (var line in controller.lineHistory)
+            Object.Destroy(line.gameObject);
+
+        controller.lineHistory.Clear();
+        controller.existingPoints.Clear();
+
+        // Reconstruct lines from loaded data
+        foreach (var data in collection.lines)
+        {
+            LineRenderer newLine = Object.Instantiate(controller.linePrefab);
+            newLine.positionCount = data.points.Length;
+            newLine.SetPositions(data.points);
+            newLine.material.color = data.color;
+            newLine.widthMultiplier = data.width;
+            newLine.widthCurve = data.widthCurve;
+
+            controller.lineHistory.Add(newLine);
+            controller.existingPoints.AddRange(data.points);
+        }
+    }
+}
+
+// BrushController class with all common code
 public class BrushController : MonoBehaviour
 {
     [Header("XR Ray Interactors")]
-    [SerializeField] private XRRayInteractor leftRay;
-    [SerializeField] private XRRayInteractor rightRay;
+    [SerializeField] public XRRayInteractor leftRay;
+    [SerializeField] public XRRayInteractor rightRay;
 
     [Header("Draw Event Observers")]
-    [SerializeField] private DrawEventObserver leftController;
-    [SerializeField] private DrawEventObserver rightController;
+    [SerializeField] public DrawEventObserver leftController;
+    [SerializeField] public DrawEventObserver rightController;
 
     [Header("Brush Settings Observer")]
-    [SerializeField] private BrushSettingsObserver brushSettings;
+    [SerializeField] public BrushSettingsObserver brushSettings;
     
     [Header("Environment Settings Observer")]
-    [SerializeField] private EnvironmentSettingsObserver environmentSettings;
+    [SerializeField] public EnvironmentSettingsObserver environmentSettings;
 
     [Header("Skybox Options")]
-    [SerializeField] private Material[] skyboxOptions;
+    [SerializeField] public Material[] skyboxOptions;
 
     [Header("Ambient Music Options")]
-    [SerializeField] private AudioClip[] ambientMusicOptions;
-    [SerializeField] private AudioSource ambientSource;
-
+    [SerializeField] public AudioClip[] ambientMusicOptions;
+    [SerializeField] public AudioSource ambientSource;
+    
     [Header("3D Mode")]
     [SerializeField] public Transform rightTipTransform;   
     [SerializeField] public Transform leftTipTransform; 
     [SerializeField] public LineRenderer linePrefab;
 
-    private Light directionalLight;
-    
     // 3D references
-    private LineRenderer currentLine;
-    private List<Vector3> existingPoints = new List<Vector3>();
-    private List<LineRenderer> lineHistory = new List<LineRenderer>();
-    private int index;
-    private bool is3DMode = false;
-    private float snapRadius = 0.03f;
+    public LineRenderer currentLine;
+    public List<Vector3> existingPoints = new List<Vector3>();
+    public List<LineRenderer> lineHistory = new List<LineRenderer>();
+    public int index;
+    public float snapRadius = 0.03f;
 
     // 2D references
-    private Whiteboard whiteboard;
-    private Color[] brushColors;
-    private List<IMarkerStrategy> strategies;
-    private IMarkerStrategy currentStrategy;
-    private bool isErasing;
+    public Whiteboard whiteboard;
+    public Color[] brushColors;
+    public List<IMarkerStrategy> strategies;
+    public IMarkerStrategy currentStrategy;
+    public bool isErasing;
+    public bool touchedLastFrame = false;
+    public bool savedUndoState = false;
+    public Vector2 lastTouchPos;
 
-    private int currentArtworkIndex = -1; 
-    private string[] savedWhiteboardArtworks; 
+    // Mode & drawing state
+    public bool is3DMode = false;
+    public bool isDrawingLeft = false;
+    public bool isDrawingRight = false;
 
-    private bool isDrawingLeft = false;
-    private bool isDrawingRight = false;
+    // Artwork persistence
+    public int currentArtworkIndex = -1; 
+    public string[] savedWhiteboardArtworks; 
+    
+    // Artwork handler
+    public ArtworkHandler artworkHandler;
 
-    private bool touchedLastFrame = false;
-    private bool savedUndoState = false;
-    private Vector2 lastTouchPos;
+    public Light directionalLight;
 
     private void OnEnable()
     {   
@@ -78,151 +376,15 @@ public class BrushController : MonoBehaviour
         InitializeMarkerStrategies();
         SelectRandomSkybox();
         SelectRandomAmbientMusic();
+
+        // Inicializa handler según modo
+        artworkHandler = is3DMode ? (ArtworkHandler)new ArtworkHandler3D(this) : new ArtworkHandler2D(this);
     }
 
     private void Update()
     {
-        if (is3DMode)
-        {
-            HandleDrawing3D();
-        }
-        else
-        {
-            HandleDrawing();
-        }
-    }
-
-    // Handle 3D drawing logic using LineRenderer
-    private void HandleDrawing3D()
-    {
-        bool isDrawing = isDrawingLeft || isDrawingRight;
-
-        if (isDrawing)
-        {
-            Transform drawingTip = isDrawingLeft ? leftTipTransform : rightTipTransform;
-
-            if (currentLine == null)
-            {
-                index = 0;
-                
-                // Start a new line
-                currentLine = Instantiate(linePrefab);
-                currentLine.material.color = brushSettings.BrushColor;
-
-                float baseWidth = brushSettings.BrushSize * 0.0025f;
-                AnimationCurve brushCurve = new AnimationCurve(
-                    new Keyframe(0f, 0.5f),
-                    new Keyframe(0.5f, 1f),
-                    new Keyframe(1f, 0.5f)
-                );
-
-                currentLine.widthMultiplier = baseWidth;
-                currentLine.widthCurve = brushCurve;
-                currentLine.positionCount = 1;
-
-                // Connect with existing points if close enough (start point)
-                Vector3 startPos = drawingTip.position;
-                foreach (var p in existingPoints)
-                {
-                    if (Vector3.Distance(p, drawingTip.position) <= snapRadius)
-                    {
-                        startPos = p;
-                        break;
-                    }
-                }
-
-                currentLine.SetPosition(0, startPos);
-                existingPoints.Add(startPos);
-
-                // Update lineHistory
-                lineHistory.Add(currentLine);
-            }
-            else
-            {
-                float distance = Vector3.Distance(currentLine.GetPosition(index), drawingTip.position);
-
-                // Add new point if moved enough
-                if (distance > 0.02f)
-                {
-                    index++;
-                    currentLine.positionCount = index + 1;
-                    currentLine.SetPosition(index, drawingTip.position);
-                    existingPoints.Add(drawingTip.position);
-                }
-            }
-        }
-        else
-        {
-            if (currentLine != null)
-            {
-                // Connect with existing points if close enough (end point)
-                Vector3 lastPos = currentLine.GetPosition(index);
-                foreach (var p in existingPoints)
-                {
-                    if (Vector3.Distance(p, lastPos) <= snapRadius)
-                    {
-                        currentLine.SetPosition(index, p);
-                        break;
-                    }
-                }
-            }
-
-            currentLine = null;
-        }
-    }
-
-    // Handle whiteboard drawing logic (Raycasting)
-    private void HandleDrawing()
-    {
-        bool isDrawing = isDrawingLeft || isDrawingRight;
-
-        // If not drawing, reset state and return
-        if (!isDrawing)
-        {
-            touchedLastFrame = false;
-            savedUndoState = false;
-            return;
-        }
-
-        XRRayInteractor activeRay = isDrawingLeft ? leftRay : rightRay;
-
-        // Perform raycast and handle drawing
-        if (activeRay.TryGetCurrent3DRaycastHit(out RaycastHit hit))
-        {
-            if (!hit.transform.CompareTag("Whiteboard")) return;
-
-            // Get or cache the whiteboard reference
-            Whiteboard hitBoard = hit.transform.GetComponent<Whiteboard>();
-            if (hitBoard != whiteboard)
-            {
-                whiteboard = hitBoard;
-                savedUndoState = false;
-            }
-
-            // Calculate touch position on the whiteboard texture
-            Vector2 touchPos = new Vector2(hit.textureCoord.x * whiteboard.textureSize.x,
-                                           hit.textureCoord.y * whiteboard.textureSize.y);
-
-            // Save undo state if not already saved for this drawing session
-            if (!savedUndoState)
-            {
-                whiteboard.SaveUndoState();
-                savedUndoState = true;
-            }
-
-            // Draw using the current strategy
-            if (touchedLastFrame)
-            {
-                currentStrategy.Draw(whiteboard, touchPos, lastTouchPos, brushSettings.BrushSize, brushColors, isErasing);
-            }
-
-            lastTouchPos = touchPos;
-            touchedLastFrame = true;
-        }
-        else
-        {
-            touchedLastFrame = false;
-        }
+        // Delegate drawing to the artwork handler
+        artworkHandler.HandleDrawing();
     }
 
     // Toggle between drawing and erasing modes (observer pattern)
@@ -235,26 +397,25 @@ public class BrushController : MonoBehaviour
     private void Toggle3DMode(bool active)
     {
         is3DMode = active;
+        artworkHandler = is3DMode ? (ArtworkHandler)new ArtworkHandler3D(this) : new ArtworkHandler2D(this);
     }
 
     // Perform undo (observer pattern)
     private void Undo()
     {
-        if (is3DMode)
-        {
-            if (lineHistory.Count > 0)
-            {
-                // Destroy the last 3D line
-                LineRenderer lastLine = lineHistory[lineHistory.Count - 1];
-                lineHistory.RemoveAt(lineHistory.Count - 1);
-                Destroy(lastLine.gameObject);
-            }
-        }
-        else
-        {
-            if (whiteboard != null)
-                whiteboard.Undo();
-        }
+        artworkHandler.Undo();
+    }
+
+    // Save current artwork to persistent storage (observer pattern)
+    private void SaveArtwork()
+    {
+        artworkHandler.SaveArtwork();
+    }
+
+    // Load artworks from storage (observer pattern)
+    private void LoadArtwork()
+    {
+        artworkHandler.LoadArtwork();
     }
 
     // Listener for brush size changes (observer pattern)
@@ -330,135 +491,6 @@ public class BrushController : MonoBehaviour
         ambientSource.playOnAwake = false;
         ambientSource.spatialBlend = 0f;
         ambientSource.Play();
-    }
-
-    // Save current artwork to persistent storage (observer pattern)
-    private void SaveArtwork()
-    {
-        if (!is3DMode)
-        {
-            Texture2D texture = whiteboard.GetTexture();
-            byte[] bytes = texture.EncodeToPNG();
-            string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
-
-            if (!Directory.Exists(folderPath))
-                Directory.CreateDirectory(folderPath);
-
-            string fileName;
-            bool isOverwrite = currentArtworkIndex >= 0 && savedWhiteboardArtworks != null && currentArtworkIndex < savedWhiteboardArtworks.Length;
-
-            // If already loaded, overwrite the file
-            if (isOverwrite)
-            {
-                fileName = Path.GetFileName(savedWhiteboardArtworks[currentArtworkIndex]);
-            }
-            else
-            {
-                fileName = $"Artwork_{System.DateTime.Now:yyyyMMdd_HHmmss}.png";
-            }
-
-            File.WriteAllBytes(Path.Combine(folderPath, fileName), bytes);
-
-            // Update the list of artworks
-            savedWhiteboardArtworks = Directory.GetFiles(folderPath, "*.png");
-
-            // If it's a new file, update the index to the end
-            if (!isOverwrite)
-            {
-                currentArtworkIndex = savedWhiteboardArtworks.Length - 1;
-            }
-        }
-        else
-        {
-            LineCollection collection = new LineCollection();
-
-            // Serialize each line's data
-            foreach (var line in lineHistory)
-            {
-                LineData data = new LineData();
-                data.points = new Vector3[line.positionCount];
-                line.GetPositions(data.points);
-                data.color = line.material.color;
-                data.width = line.widthMultiplier;
-                data.widthCurve = line.widthCurve;
-
-                collection.lines.Add(data);
-            }
-
-            string json = JsonUtility.ToJson(collection, true);
-
-            string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "3D");
-            if (!Directory.Exists(folderPath))
-                Directory.CreateDirectory(folderPath);
-
-            string fileName;
-
-            // If already loaded, overwrite the file
-            string[] files = Directory.GetFiles(folderPath, "*.json");
-            if (currentArtworkIndex >= 0 && files.Length > 0 && currentArtworkIndex < files.Length)
-            {
-                fileName = Path.GetFileName(files[currentArtworkIndex]);
-            }
-            else
-            {
-                fileName = $"Artwork3D_{System.DateTime.Now:yyyyMMdd_HHmmss}.json";
-            }
-
-            File.WriteAllText(Path.Combine(folderPath, fileName), json);
-        }
-    }
-
-    // Load artworks from storage (observer pattern)
-    private void LoadArtwork()
-    {
-        if (!is3DMode)
-        {
-            string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
-
-            savedWhiteboardArtworks = Directory.GetFiles(folderPath, "*.png").OrderBy(f => File.GetCreationTime(f)).ToArray();
-            if (savedWhiteboardArtworks.Length == 0) return;
-
-            currentArtworkIndex = (currentArtworkIndex + 1) % savedWhiteboardArtworks.Length;
-
-            byte[] fileData = File.ReadAllBytes(savedWhiteboardArtworks[currentArtworkIndex]);
-            Texture2D loadedTexture = new Texture2D(2, 2);
-            loadedTexture.LoadImage(fileData);
-
-            whiteboard.SetTexture(loadedTexture);
-        }
-        else
-        {
-            string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "3D");
-            string[] files = Directory.GetFiles(folderPath, "*.json");
-
-            if (files.Length == 0) return;
-
-            currentArtworkIndex = (currentArtworkIndex + 1) % files.Length;
-
-            string json = File.ReadAllText(files[currentArtworkIndex]);
-            LineCollection collection = JsonUtility.FromJson<LineCollection>(json);
-
-            // Clear current lines
-            foreach (var line in lineHistory)
-                Destroy(line.gameObject);
-
-            lineHistory.Clear();
-            existingPoints.Clear();
-
-            // Reconstruct lines from loaded data
-            foreach (var data in collection.lines)
-            {
-                LineRenderer newLine = Instantiate(linePrefab);
-                newLine.positionCount = data.points.Length;
-                newLine.SetPositions(data.points);
-                newLine.material.color = data.color;
-                newLine.widthMultiplier = data.width;
-                newLine.widthCurve = data.widthCurve;
-
-                lineHistory.Add(newLine);
-                existingPoints.AddRange(data.points);
-            }
-        }
     }
 
     // Initialize subscriptions to observer events
