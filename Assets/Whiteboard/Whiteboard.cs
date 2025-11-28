@@ -50,4 +50,17 @@ public class Whiteboard : MonoBehaviour
             texture.Apply();
         }
     }
+
+    // Get the current whiteboard texture
+    public Texture2D GetTexture()
+    {
+        return texture;
+    }
+
+    // Set a new texture to the whiteboard
+    public void SetTexture(Texture2D newTexture)
+    {
+        texture.SetPixels(newTexture.GetPixels());
+        texture.Apply();
+    }
 }

@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.SceneManagement;
+using System.IO;
 
 // Controller to manage brush drawing on the whiteboard using XRControllers
 public class BrushController : MonoBehaviour
@@ -50,6 +51,9 @@ public class BrushController : MonoBehaviour
     private List<IMarkerStrategy> strategies;
     private IMarkerStrategy currentStrategy;
     private bool isErasing;
+
+    private int currentArtworkIndex = -1; 
+    private string[] savedWhiteboardArtworks; 
 
     public XRControllerState leftState;
     public XRControllerState rightState;
@@ -321,7 +325,136 @@ public class BrushController : MonoBehaviour
         ambientSource.spatialBlend = 0f;
         ambientSource.Play();
     }
-    
+
+    // Save current artwork to persistent storage (observer pattern)
+    private void SaveArtwork()
+    {
+        if (!is3DMode)
+        {
+            Texture2D texture = whiteboard.GetTexture();
+            byte[] bytes = texture.EncodeToPNG();
+            string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
+
+            if (!Directory.Exists(folderPath))
+                Directory.CreateDirectory(folderPath);
+
+            string fileName;
+            bool isOverwrite = currentArtworkIndex >= 0 && savedWhiteboardArtworks != null && currentArtworkIndex < savedWhiteboardArtworks.Length;
+
+            // If already loaded, overwrite the file
+            if (isOverwrite)
+            {
+                fileName = Path.GetFileName(savedWhiteboardArtworks[currentArtworkIndex]);
+            }
+            else
+            {
+                fileName = $"Artwork_{System.DateTime.Now:yyyyMMdd_HHmmss}.png";
+            }
+
+            File.WriteAllBytes(Path.Combine(folderPath, fileName), bytes);
+
+            // Update the list of artworks
+            savedWhiteboardArtworks = Directory.GetFiles(folderPath, "*.png");
+
+            // If it's a new file, update the index to the end
+            if (!isOverwrite)
+            {
+                currentArtworkIndex = savedWhiteboardArtworks.Length - 1;
+            }
+        }
+        else
+        {
+            LineCollection collection = new LineCollection();
+
+            // Serialize each line's data
+            foreach (var line in lineHistory)
+            {
+                LineData data = new LineData();
+                data.points = new Vector3[line.positionCount];
+                line.GetPositions(data.points);
+                data.color = line.material.color;
+                data.width = line.widthMultiplier;
+                data.widthCurve = line.widthCurve;
+
+                collection.lines.Add(data);
+            }
+
+            string json = JsonUtility.ToJson(collection, true);
+
+            string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "3D");
+            if (!Directory.Exists(folderPath))
+                Directory.CreateDirectory(folderPath);
+
+            string fileName;
+
+            // If already loaded, overwrite the file
+            string[] files = Directory.GetFiles(folderPath, "*.json");
+            if (currentArtworkIndex >= 0 && files.Length > 0 && currentArtworkIndex < files.Length)
+            {
+                fileName = Path.GetFileName(files[currentArtworkIndex]);
+            }
+            else
+            {
+                fileName = $"Artwork3D_{System.DateTime.Now:yyyyMMdd_HHmmss}.json";
+            }
+
+            File.WriteAllText(Path.Combine(folderPath, fileName), json);
+        }
+    }
+
+    // Load artworks from storage (observer pattern)
+    private void LoadArtwork()
+    {
+        if (!is3DMode)
+        {
+            string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
+
+            savedWhiteboardArtworks = Directory.GetFiles(folderPath, "*.png").OrderBy(f => File.GetCreationTime(f)).ToArray();
+            if (savedWhiteboardArtworks.Length == 0) return;
+
+            currentArtworkIndex = (currentArtworkIndex + 1) % savedWhiteboardArtworks.Length;
+
+            byte[] fileData = File.ReadAllBytes(savedWhiteboardArtworks[currentArtworkIndex]);
+            Texture2D loadedTexture = new Texture2D(2, 2);
+            loadedTexture.LoadImage(fileData);
+
+            whiteboard.SetTexture(loadedTexture);
+        }
+        else
+        {
+            string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "3D");
+            string[] files = Directory.GetFiles(folderPath, "*.json");
+
+            if (files.Length == 0) return;
+
+            currentArtworkIndex = (currentArtworkIndex + 1) % files.Length;
+
+            string json = File.ReadAllText(files[currentArtworkIndex]);
+            LineCollection collection = JsonUtility.FromJson<LineCollection>(json);
+
+            // Clear current lines
+            foreach (var line in lineHistory)
+                Destroy(line.gameObject);
+
+            lineHistory.Clear();
+            existingPoints.Clear();
+
+            // Reconstruct lines from loaded data
+            foreach (var data in collection.lines)
+            {
+                LineRenderer newLine = Instantiate(linePrefab);
+                newLine.positionCount = data.points.Length;
+                newLine.SetPositions(data.points);
+                newLine.material.color = data.color;
+                newLine.widthMultiplier = data.width;
+                newLine.widthCurve = data.widthCurve;
+
+                lineHistory.Add(newLine);
+                existingPoints.AddRange(data.points);
+            }
+        }
+    }
+
     // Initialize subscriptions to observer events
     private void InitializeObserverSubscriptions()
     {
@@ -332,6 +465,8 @@ public class BrushController : MonoBehaviour
             brushSettings.OnBrushColorChanged += OnBrushColorChanged;
             brushSettings.OnStrategyChanged += OnStrategyChanged;
             brushSettings.On3DModeChanged += Toggle3DMode;
+            brushSettings.OnSaveArtwork += SaveArtwork;
+            brushSettings.OnLoadArtwork += LoadArtwork;
         }
 
         if (leftController != null)
