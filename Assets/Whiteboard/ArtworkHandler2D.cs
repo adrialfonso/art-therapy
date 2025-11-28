@@ -13,8 +13,17 @@ public class ArtworkHandler2D : ArtworkHandler
     private bool touchedLastFrame = false;
     private bool savedUndoState = false;
     private Vector2 lastTouchPos;
+    private Color[] brushColors;
+    private List<IMarkerStrategy> strategies;
+    private IMarkerStrategy currentStrategy;
+    private bool isErasing = false;
 
-    public ArtworkHandler2D(BrushController controller) : base(controller) { }
+    public ArtworkHandler2D(BrushController controller) : base(controller)
+    {
+        InitializeMarkerStrategies();
+        OnBrushSizeChanged(controller.brushSettings.BrushSize);
+        OnBrushColorChanged(controller.brushSettings.BrushColor);
+    }
 
     public override void HandleDrawing()
     {
@@ -55,8 +64,7 @@ public class ArtworkHandler2D : ArtworkHandler
             // Draw using the current strategy
             if (touchedLastFrame)
             {
-                controller.currentStrategy.Draw(whiteboard, touchPos, lastTouchPos,
-                                                controller.brushSettings.BrushSize, controller.brushColors, controller.isErasing);
+                currentStrategy.Draw(whiteboard, touchPos, lastTouchPos, controller.brushSettings.BrushSize, brushColors, isErasing);
             }
 
             lastTouchPos = touchPos;
@@ -120,5 +128,39 @@ public class ArtworkHandler2D : ArtworkHandler
         loadedTexture.LoadImage(fileData);
 
         whiteboard.SetTexture(loadedTexture);
+    }
+
+    public void ToggleEraseMode()
+    {
+        isErasing = !isErasing;
+    }
+
+    public void OnBrushSizeChanged(int size)
+    {
+        brushColors = Enumerable.Repeat(controller.brushSettings.BrushColor, size * size).ToArray();
+    }
+
+    public void OnBrushColorChanged(Color color)
+    {
+        brushColors = Enumerable.Repeat(color, controller.brushSettings.BrushSize * controller.brushSettings.BrushSize).ToArray();
+    }
+
+    public void OnStrategyChanged(int index)
+    {
+        if (index >= 0 && index < strategies.Count)
+            currentStrategy = strategies[index];
+    }
+
+    // Initialize available marker strategies
+    private void InitializeMarkerStrategies()
+    {
+        strategies = new List<IMarkerStrategy>
+        {
+            new NormalMarkerStrategy(),
+            new GraffitiMarkerStrategy(),
+            new WatercolorMarkerStrategy()
+        };
+
+        currentStrategy = strategies[controller.brushSettings.StrategyIndex];
     }
 }

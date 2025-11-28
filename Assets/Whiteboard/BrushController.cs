@@ -35,12 +35,6 @@ public class BrushController : MonoBehaviour
     [SerializeField] public Transform leftTipTransform; 
     [SerializeField] public LineRenderer linePrefab;
 
-    // 2D references
-    public Color[] brushColors;
-    public List<IMarkerStrategy> strategies;
-    public IMarkerStrategy currentStrategy;
-    public bool isErasing;
-
     // Mode & drawing state
     public bool is3DMode = false;
     public bool isDrawingLeft = false;
@@ -62,13 +56,9 @@ public class BrushController : MonoBehaviour
 
     private void Start()
     {
-        // Initialize brush colors
-        brushColors = Enumerable.Repeat(brushSettings.BrushColor, brushSettings.BrushSize * brushSettings.BrushSize).ToArray();
-
         // Find the directional light in the scene
         directionalLight = FindObjectsOfType<Light>().FirstOrDefault(l => l.type == LightType.Directional);
 
-        InitializeMarkerStrategies();
         SelectRandomSkybox();
         SelectRandomAmbientMusic();
 
@@ -85,7 +75,8 @@ public class BrushController : MonoBehaviour
     // Toggle between drawing and erasing modes (observer pattern)
     private void ToggleEraseMode()
     {
-        isErasing = !isErasing;
+        if (artworkHandler is ArtworkHandler2D handler2D)
+            handler2D.ToggleEraseMode();
     }
 
     // Toggle between 2D and 3D drawing modes (observer pattern)
@@ -116,20 +107,22 @@ public class BrushController : MonoBehaviour
     // Listener for brush size changes (observer pattern)
     private void OnBrushSizeChanged(int size)
     {
-        brushColors = Enumerable.Repeat(brushSettings.BrushColor, size * size).ToArray();
+        if (artworkHandler is ArtworkHandler2D handler2D)
+            handler2D.OnBrushSizeChanged(size);
     }
 
     // Listener for brush color changes (observer pattern)
     private void OnBrushColorChanged(Color color)
     {
-        brushColors = Enumerable.Repeat(color, brushSettings.BrushSize * brushSettings.BrushSize).ToArray();
+        if (artworkHandler is ArtworkHandler2D handler2D)
+            handler2D.OnBrushColorChanged(color);
     }
 
     // Listener for strategy changes (observer pattern)
     private void OnStrategyChanged(int index)
     {
-        if (index >= 0 && index < strategies.Count)
-            currentStrategy = strategies[index];
+        if (artworkHandler is ArtworkHandler2D handler2D)
+            handler2D.OnStrategyChanged(index);
     }
 
     // Listener for changes in the direct light of the environment
@@ -226,18 +219,5 @@ public class BrushController : MonoBehaviour
         }
 
         SceneManager.sceneLoaded += OnSceneLoaded;
-    }
-
-    // Initialize available marker strategies
-    private void InitializeMarkerStrategies()
-    {
-        strategies = new List<IMarkerStrategy>
-        {
-            new NormalMarkerStrategy(),
-            new GraffitiMarkerStrategy(),
-            new WatercolorMarkerStrategy()
-        };
-
-        currentStrategy = strategies[brushSettings.StrategyIndex];
     }
 }
