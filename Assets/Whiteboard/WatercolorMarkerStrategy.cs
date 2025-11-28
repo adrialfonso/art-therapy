@@ -23,7 +23,7 @@ public class WatercolorMarkerStrategy : BaseMarkerStrategy
         // Base blend factor for watercolor effect
         float baseBlend = 0.02f; 
 
-        // Apply circular brush shape, if the pixel is within the radius, paint it following the Normal strategy (solid color from brushColors)
+        // Apply circular brush shape, if the pixel is within the radius, paint it following the Watercolor strategy (Blend with existing color)
         for (int j = 0; j < brushSize; j++)
         {
             for (int i = 0; i < brushSize; i++)
