@@ -55,8 +55,12 @@ public class BrushController : MonoBehaviour
     private int currentArtworkIndex = -1; 
     private string[] savedWhiteboardArtworks; 
 
-    public XRControllerState leftState;
-    public XRControllerState rightState;
+    private bool isDrawingLeft = false;
+    private bool isDrawingRight = false;
+
+    private bool touchedLastFrame = false;
+    private bool savedUndoState = false;
+    private Vector2 lastTouchPos;
 
     private void OnEnable()
     {   
@@ -65,10 +69,6 @@ public class BrushController : MonoBehaviour
 
     private void Start()
     {
-        // Initialize controller states
-        leftState = new XRControllerState { ray = leftRay };
-        rightState = new XRControllerState { ray = rightRay };
-
         // Initialize brush colors
         brushColors = Enumerable.Repeat(brushSettings.BrushColor, brushSettings.BrushSize * brushSettings.BrushSize).ToArray();
 
@@ -88,19 +88,18 @@ public class BrushController : MonoBehaviour
         }
         else
         {
-            HandleDrawing(leftState);
-            HandleDrawing(rightState);
+            HandleDrawing();
         }
     }
 
     // Handle 3D drawing logic using LineRenderer
     private void HandleDrawing3D()
     {
-        bool isDrawing = leftState.isDrawing || rightState.isDrawing;
+        bool isDrawing = isDrawingLeft || isDrawingRight;
 
         if (isDrawing)
         {
-            Transform drawingTip = leftState.isDrawing ? leftTipTransform : rightTipTransform;
+            Transform drawingTip = isDrawingLeft ? leftTipTransform : rightTipTransform;
 
             if (currentLine == null)
             {
@@ -172,19 +171,23 @@ public class BrushController : MonoBehaviour
         }
     }
 
-    // Handle drawing logic for a given controller state
-    private void HandleDrawing(XRControllerState state)
+    // Handle whiteboard drawing logic (Raycasting)
+    private void HandleDrawing()
     {
+        bool isDrawing = isDrawingLeft || isDrawingRight;
+
         // If not drawing, reset state and return
-        if (!state.isDrawing)
+        if (!isDrawing)
         {
-            state.touchedLastFrame = false;
-            state.savedUndoState = false;
+            touchedLastFrame = false;
+            savedUndoState = false;
             return;
         }
 
+        XRRayInteractor activeRay = isDrawingLeft ? leftRay : rightRay;
+
         // Perform raycast and handle drawing
-        if (state.ray.TryGetCurrent3DRaycastHit(out RaycastHit hit))
+        if (activeRay.TryGetCurrent3DRaycastHit(out RaycastHit hit))
         {
             if (!hit.transform.CompareTag("Whiteboard")) return;
 
@@ -193,29 +196,32 @@ public class BrushController : MonoBehaviour
             if (hitBoard != whiteboard)
             {
                 whiteboard = hitBoard;
-                state.savedUndoState = false;
+                savedUndoState = false;
             }
 
             // Calculate touch position on the whiteboard texture
-            Vector2 touchPos = new Vector2(hit.textureCoord.x * whiteboard.textureSize.x, hit.textureCoord.y * whiteboard.textureSize.y);
+            Vector2 touchPos = new Vector2(hit.textureCoord.x * whiteboard.textureSize.x,
+                                           hit.textureCoord.y * whiteboard.textureSize.y);
 
             // Save undo state if not already saved for this drawing session
-            if (!state.savedUndoState)
+            if (!savedUndoState)
             {
                 whiteboard.SaveUndoState();
-                state.savedUndoState = true;
+                savedUndoState = true;
             }
 
             // Draw using the current strategy
-            if (state.touchedLastFrame)
-                currentStrategy.Draw(whiteboard, touchPos, state.lastTouchPos, brushSettings.BrushSize, brushColors, isErasing);
+            if (touchedLastFrame)
+            {
+                currentStrategy.Draw(whiteboard, touchPos, lastTouchPos, brushSettings.BrushSize, brushColors, isErasing);
+            }
 
-            state.lastTouchPos = touchPos;
-            state.touchedLastFrame = true;
+            lastTouchPos = touchPos;
+            touchedLastFrame = true;
         }
         else
         {
-            state.touchedLastFrame = false;
+            touchedLastFrame = false;
         }
     }
 
@@ -471,16 +477,16 @@ public class BrushController : MonoBehaviour
 
         if (leftController != null)
         {
-            leftController.OnDrawPressed += () => leftState.isDrawing = true;
-            leftController.OnDrawReleased += () => leftState.isDrawing = false;
+            leftController.OnDrawPressed += () => isDrawingLeft = true;
+            leftController.OnDrawReleased += () => isDrawingLeft = false;
             leftController.OnErasePressed += ToggleEraseMode;
             leftController.OnUndoPressed += Undo;
         }
 
         if (rightController != null)
         {
-            rightController.OnDrawPressed += () => rightState.isDrawing = true;
-            rightController.OnDrawReleased += () => rightState.isDrawing = false;
+            rightController.OnDrawPressed += () => isDrawingRight = true;
+            rightController.OnDrawReleased += () => isDrawingRight = false;
             rightController.OnErasePressed += ToggleEraseMode;
             rightController.OnUndoPressed += Undo;
         }
