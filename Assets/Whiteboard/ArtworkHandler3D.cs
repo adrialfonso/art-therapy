@@ -106,6 +106,7 @@ public class ArtworkHandler3D : ArtworkHandler
         }
     }
 
+    // Save current artwork to persistent data path (3D)
     public override void SaveArtwork()
     {
         LineCollection collection = new LineCollection();
@@ -143,6 +144,7 @@ public class ArtworkHandler3D : ArtworkHandler
         File.WriteAllText(Path.Combine(folderPath, fileName), json);
     }
 
+    // Load artwork from persistent data path (3D)
     public override void LoadArtwork()
     {
         string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "3D");

@@ -6,7 +6,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.SceneManagement;
 using System.IO;
 
-// Abstract class to handle artwork for 2D and 3D modes
+// Abstract class to handle artwork operations
 public abstract class ArtworkHandler
 {
     protected BrushController controller;

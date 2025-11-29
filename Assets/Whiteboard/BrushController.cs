@@ -6,7 +6,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.SceneManagement;
 using System.IO;
 
-// BrushController class with all common code
+// Controller for brush interactions and settings
 public class BrushController : MonoBehaviour
 {
     [Header("XR Ray Interactors")]
@@ -35,7 +35,7 @@ public class BrushController : MonoBehaviour
     [SerializeField] public Transform leftTipTransform; 
     [SerializeField] public LineRenderer linePrefab;
 
-    // Mode & drawing state
+    // Drawing Mode & drawing state
     public bool is3DMode = false;
     public bool isDrawingLeft = false;
     public bool isDrawingRight = false;
@@ -44,7 +44,7 @@ public class BrushController : MonoBehaviour
     public int currentArtworkIndex = -1; 
     public string[] savedWhiteboardArtworks; 
     
-    // Artwork handler
+    // Artwork handler 2D/3D
     public ArtworkHandler artworkHandler;
 
     public Light directionalLight;
@@ -56,30 +56,31 @@ public class BrushController : MonoBehaviour
 
     private void Start()
     {
-        // Find the directional light in the scene
         directionalLight = FindObjectsOfType<Light>().FirstOrDefault(l => l.type == LightType.Directional);
 
+        // Initialize environment
         SelectRandomSkybox();
         SelectRandomAmbientMusic();
+        OnDirectLightChanged(environmentSettings.DirectLightIntensity);
+        OnAmbientLightChanged(environmentSettings.AmbientLightIntensity);
+        OnAmbientVolumeChanged(environmentSettings.AmbientVolume);
 
-        // Inicializa handler según modo
         artworkHandler = is3DMode ? (ArtworkHandler)new ArtworkHandler3D(this) : new ArtworkHandler2D(this);
     }
 
     private void Update()
     {
-        // Delegate drawing to the artwork handler
         artworkHandler.HandleDrawing();
     }
 
-    // Toggle between drawing and erasing modes (observer pattern)
+    // Toggle between drawing and erasing modes (observer pattern) (delegated to ArtworkHandler2D)
     private void ToggleEraseMode()
     {
         if (artworkHandler is ArtworkHandler2D handler2D)
             handler2D.ToggleEraseMode();
     }
 
-    // Toggle between 2D and 3D drawing modes (observer pattern)
+    // Toggle between 2D and 3D drawing modes (observer pattern) 
     private void Toggle3DMode(bool active)
     {
         is3DMode = active;
@@ -92,53 +93,53 @@ public class BrushController : MonoBehaviour
         artworkHandler.Undo();
     }
 
-    // Save current artwork to persistent storage (observer pattern)
+    // Save current artwork to persistent data path (observer pattern)
     private void SaveArtwork()
     {
         artworkHandler.SaveArtwork();
     }
 
-    // Load artworks from storage (observer pattern)
+    // Load artworks from persistent data path (observer pattern)
     private void LoadArtwork()
     {
         artworkHandler.LoadArtwork();
     }
 
-    // Listener for brush size changes (observer pattern)
+    // Listener for brush size changes (observer pattern) (delegated to ArtworkHandler2D)
     private void OnBrushSizeChanged(int size)
     {
         if (artworkHandler is ArtworkHandler2D handler2D)
             handler2D.OnBrushSizeChanged(size);
     }
 
-    // Listener for brush color changes (observer pattern)
+    // Listener for brush color changes (observer pattern) (delegated to ArtworkHandler2D)
     private void OnBrushColorChanged(Color color)
     {
         if (artworkHandler is ArtworkHandler2D handler2D)
             handler2D.OnBrushColorChanged(color);
     }
 
-    // Listener for strategy changes (observer pattern)
+    // Listener for strategy changes (observer pattern) (delegated to ArtworkHandler2D)
     private void OnStrategyChanged(int index)
     {
         if (artworkHandler is ArtworkHandler2D handler2D)
             handler2D.OnStrategyChanged(index);
     }
 
-    // Listener for changes in the direct light of the environment
+    // Listener for changes in the direct light of the environment (observer pattern)
     private void OnDirectLightChanged(float intensity)
     {
         if (directionalLight != null)
             directionalLight.intensity = intensity;
     }
 
-    // Listener for changes in the ambient light of the environment
+    // Listener for changes in the ambient light of the environment (observer pattern)
     private void OnAmbientLightChanged(float intensity)
     {
         RenderSettings.ambientIntensity = intensity;
     }
 
-    // Listener for scene load events to update directional light reference
+    // Listener for scene load events to update directional light reference (observer pattern)
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         directionalLight = FindObjectsOfType<Light>().FirstOrDefault(l => l.type == LightType.Directional);
@@ -147,7 +148,18 @@ public class BrushController : MonoBehaviour
         OnAmbientLightChanged(environmentSettings.AmbientLightIntensity);
     }
 
-    // Listener for changes in ambient volume of the environment
+    // Listener for scene change requests (observer pattern)
+    private void OnSceneChanged(string sceneName)
+    {
+        SceneManager.LoadScene(sceneName);
+
+        directionalLight = FindObjectsOfType<Light>().FirstOrDefault(l => l.type == LightType.Directional);
+
+        OnDirectLightChanged(environmentSettings.DirectLightIntensity);
+        OnAmbientLightChanged(environmentSettings.AmbientLightIntensity);
+    }
+
+    // Listener for changes in ambient volume of the environment (observer pattern)
     private void OnAmbientVolumeChanged(float volume)
     {
         if (ambientSource != null)
@@ -216,8 +228,7 @@ public class BrushController : MonoBehaviour
             environmentSettings.OnDirectLightChanged += OnDirectLightChanged;
             environmentSettings.OnAmbientLightChanged += OnAmbientLightChanged;
             environmentSettings.OnAmbientVolumeChanged += OnAmbientVolumeChanged;
+            environmentSettings.OnSceneChanged += OnSceneChanged;
         }
-
-        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 }

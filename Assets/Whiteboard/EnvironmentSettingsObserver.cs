@@ -9,11 +9,12 @@ public class EnvironmentSettingsObserver : MonoBehaviour
     public event Action<float> OnDirectLightChanged;
     public event Action<float> OnAmbientLightChanged;
     public event Action<float> OnAmbientVolumeChanged;
+    public event Action<string> OnSceneChanged;
 
     [Header("Environment Properties")]
-    [SerializeField, Range(0f, 5f)] private float directLightIntensity = 0.8f;
-    [SerializeField, Range(0f, 5f)] private float ambientLightIntensity = 0.8f;
-    [SerializeField, Range(0f, 1f)] private float ambientVolume = 0.5f;
+    [SerializeField, Range(0f, 5f)] private float directLightIntensity = 1.0f;
+    [SerializeField, Range(0f, 5f)] private float ambientLightIntensity = 1.0f;
+    [SerializeField, Range(0f, 1f)] private float ambientVolume = 0.1f;
 
     [Header("UI Elements")]
     public Slider directLightSlider;
@@ -55,6 +56,7 @@ public class EnvironmentSettingsObserver : MonoBehaviour
         UpdateUI();
     }
 
+    // Invoked when the ambient volume slider value changes
     public void SetAmbientVolume(float volume)
     {
         ambientVolume = volume;
@@ -62,6 +64,12 @@ public class EnvironmentSettingsObserver : MonoBehaviour
 
         if (ambientVolumeText != null)
             ambientVolumeText.text = volume.ToString("F2");
+    }
+
+    // Invoked to change the scene based on user selection
+    public void ChangeScene(string sceneName)
+    {
+        OnSceneChanged?.Invoke(sceneName);  
     }
 
     // Initialize UI elements and their listeners
@@ -95,4 +103,5 @@ public class EnvironmentSettingsObserver : MonoBehaviour
     // Public getters for environment properties
     public float DirectLightIntensity => directLightIntensity;
     public float AmbientLightIntensity => ambientLightIntensity;
+    public float AmbientVolume => ambientVolume;
 }

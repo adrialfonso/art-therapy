@@ -37,6 +37,7 @@ public class ArtworkHandler2D : ArtworkHandler
             return;
         }
 
+        // Determine active ray interactor
         XRRayInteractor activeRay = controller.isDrawingLeft ? controller.leftRay : controller.rightRay;
 
         // Perform raycast and handle drawing
@@ -44,6 +45,7 @@ public class ArtworkHandler2D : ArtworkHandler
         {
             if (!hit.transform.CompareTag("Whiteboard")) return;
 
+            // Get or update whiteboard reference
             Whiteboard hitBoard = hit.transform.GetComponent<Whiteboard>();
             if (hitBoard != whiteboard)
             {
@@ -51,8 +53,7 @@ public class ArtworkHandler2D : ArtworkHandler
                 savedUndoState = false;
             }
 
-            Vector2 touchPos = new Vector2(hit.textureCoord.x * whiteboard.textureSize.x,
-                                           hit.textureCoord.y * whiteboard.textureSize.y);
+            Vector2 touchPos = new Vector2(hit.textureCoord.x * whiteboard.textureSize.x, hit.textureCoord.y * whiteboard.textureSize.y);
 
             // Save undo state if not already saved
             if (!savedUndoState)
@@ -61,7 +62,7 @@ public class ArtworkHandler2D : ArtworkHandler
                 savedUndoState = true;
             }
 
-            // Draw using the current strategy
+            // Draw using the current drawing strategy
             if (touchedLastFrame)
             {
                 currentStrategy.Draw(whiteboard, touchPos, lastTouchPos, controller.brushSettings.BrushSize, brushColors, isErasing);
@@ -82,6 +83,7 @@ public class ArtworkHandler2D : ArtworkHandler
             whiteboard.Undo();
     }
 
+    // Save current artwork to persistent data path (2D)
     public override void SaveArtwork()
     {
         Texture2D texture = whiteboard.GetTexture();
@@ -114,6 +116,7 @@ public class ArtworkHandler2D : ArtworkHandler
             controller.currentArtworkIndex = controller.savedWhiteboardArtworks.Length - 1;
     }
 
+    // Load artwork from persistent data path (2D)
     public override void LoadArtwork()
     {
         string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
