@@ -3,7 +3,6 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine.SceneManagement;
 using System.IO;
 
 // Controller for brush interactions and settings
@@ -47,8 +46,6 @@ public class BrushController : MonoBehaviour
     // Artwork handler 2D/3D
     public ArtworkHandler artworkHandler;
 
-    public Light directionalLight;
-
     private void OnEnable()
     {   
         InitializeObserverSubscriptions();
@@ -56,13 +53,11 @@ public class BrushController : MonoBehaviour
 
     private void Start()
     {
-        directionalLight = FindObjectsOfType<Light>().FirstOrDefault(l => l.type == LightType.Directional);
-
         // Initialize environment
         SelectRandomSkybox();
         SelectRandomAmbientMusic();
-        OnDirectLightChanged(environmentSettings.DirectLightIntensity);
-        OnAmbientLightChanged(environmentSettings.AmbientLightIntensity);
+        OnSkyExposureChanged(environmentSettings.SkyExposure);
+        OnSkyRotationChanged(environmentSettings.SkyRotation);
         OnAmbientVolumeChanged(environmentSettings.AmbientVolume);
 
         artworkHandler = is3DMode ? (ArtworkHandler)new ArtworkHandler3D(this) : new ArtworkHandler2D(this);
@@ -126,37 +121,24 @@ public class BrushController : MonoBehaviour
             handler2D.OnStrategyChanged(index);
     }
 
-    // Listener for changes in the direct light of the environment (observer pattern)
-    private void OnDirectLightChanged(float intensity)
+    // Listener for changes in the sky exposure of the environment (observer pattern)
+    private void OnSkyExposureChanged(float exposure)
     {
-        if (directionalLight != null)
-            directionalLight.intensity = intensity;
+        if (RenderSettings.skybox != null)
+        {
+            RenderSettings.skybox.SetFloat("_Exposure", exposure);
+            DynamicGI.UpdateEnvironment();
+        }
     }
 
-    // Listener for changes in the ambient light of the environment (observer pattern)
-    private void OnAmbientLightChanged(float intensity)
+    // Listener for changes in the sky rotation of the environment (observer pattern)
+    private void OnSkyRotationChanged(float rotation)
     {
-        RenderSettings.ambientIntensity = intensity;
-    }
-
-    // Listener for scene load events to update directional light reference (observer pattern)
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        directionalLight = FindObjectsOfType<Light>().FirstOrDefault(l => l.type == LightType.Directional);
-
-        OnDirectLightChanged(environmentSettings.DirectLightIntensity);
-        OnAmbientLightChanged(environmentSettings.AmbientLightIntensity);
-    }
-
-    // Listener for scene change requests (observer pattern)
-    private void OnSceneChanged(string sceneName)
-    {
-        SceneManager.LoadScene(sceneName);
-
-        directionalLight = FindObjectsOfType<Light>().FirstOrDefault(l => l.type == LightType.Directional);
-
-        OnDirectLightChanged(environmentSettings.DirectLightIntensity);
-        OnAmbientLightChanged(environmentSettings.AmbientLightIntensity);
+        if (RenderSettings.skybox != null)
+        {
+            RenderSettings.skybox.SetFloat("_Rotation", rotation);
+            DynamicGI.UpdateEnvironment();
+        }
     }
 
     // Listener for changes in ambient volume of the environment (observer pattern)
@@ -225,10 +207,9 @@ public class BrushController : MonoBehaviour
 
         if (environmentSettings != null)
         {
-            environmentSettings.OnDirectLightChanged += OnDirectLightChanged;
-            environmentSettings.OnAmbientLightChanged += OnAmbientLightChanged;
+            environmentSettings.OnSkyExposureChanged += OnSkyExposureChanged;
+            environmentSettings.OnSkyRotationChanged += OnSkyRotationChanged;
             environmentSettings.OnAmbientVolumeChanged += OnAmbientVolumeChanged;
-            environmentSettings.OnSceneChanged += OnSceneChanged;
         }
     }
 }

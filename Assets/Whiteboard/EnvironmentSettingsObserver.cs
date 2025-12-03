@@ -6,21 +6,20 @@ using TMPro;
 public class EnvironmentSettingsObserver : MonoBehaviour
 {
     // Events to notify subscribers of environment property changes
-    public event Action<float> OnDirectLightChanged;
-    public event Action<float> OnAmbientLightChanged;
+    public event Action<float> OnSkyExposureChanged;
+    public event Action<float> OnSkyRotationChanged;
     public event Action<float> OnAmbientVolumeChanged;
-    public event Action<string> OnSceneChanged;
 
     [Header("Environment Properties")]
-    [SerializeField, Range(0f, 5f)] private float directLightIntensity = 1.0f;
-    [SerializeField, Range(0f, 5f)] private float ambientLightIntensity = 1.0f;
-    [SerializeField, Range(0f, 1f)] private float ambientVolume = 0.1f;
+    [SerializeField] private float skyExposure = 1.0f;
+    [SerializeField] private float skyRotation = 1.0f;
+    [SerializeField] private float ambientVolume = 0.1f;
 
     [Header("UI Elements")]
-    public Slider directLightSlider;
-    public TMP_Text directLightText;
-    public Slider ambientLightSlider;
-    public TMP_Text ambientLightText;
+    public Slider skyExposureSlider;
+    public TMP_Text skyExposureText;
+    public Slider skyRotationSlider;
+    public TMP_Text skyRotationText;
     public Slider ambientVolumeSlider;
     public TMP_Text ambientVolumeText;
 
@@ -33,26 +32,26 @@ public class EnvironmentSettingsObserver : MonoBehaviour
     // Update UI elements to reflect current environment settings
     private void UpdateUI()
     {
-        if (directLightText != null)
-            directLightText.text = directLightIntensity.ToString("F2");
+        if (skyExposureText != null)
+            skyExposureText.text = skyExposure.ToString("F2");
 
-        if (ambientLightText != null)
-            ambientLightText.text = ambientLightIntensity.ToString("F2");
+        if (skyRotationText != null)
+            skyRotationText.text = skyRotation.ToString("F2");
     }
 
-    // Invoked when the direct light intensity slider value changes
-    public void SetDirectLightIntensity(float intensity)
+    // Invoked when the sky exposure slider value changes
+    public void SetSkyExposure(float exposure)
     {
-        directLightIntensity = intensity;
-        OnDirectLightChanged?.Invoke(directLightIntensity);
+        skyExposure = exposure;
+        OnSkyExposureChanged?.Invoke(skyExposure);
         UpdateUI();
     }
 
-    // Invoked when the ambient light intensity slider value changes
-    public void SetAmbientLightIntensity(float intensity)
+    // Invoked when the sky rotation slider value changes
+    public void SetSkyRotation(float rotation)
     {
-        ambientLightIntensity = intensity;
-        OnAmbientLightChanged?.Invoke(ambientLightIntensity);
+        skyRotation = rotation;
+        OnSkyRotationChanged?.Invoke(skyRotation);
         UpdateUI();
     }
 
@@ -66,42 +65,30 @@ public class EnvironmentSettingsObserver : MonoBehaviour
             ambientVolumeText.text = volume.ToString("F2");
     }
 
-    // Invoked to change the scene based on user selection
-    public void ChangeScene(string sceneName)
-    {
-        OnSceneChanged?.Invoke(sceneName);  
-    }
-
     // Initialize UI elements and their listeners
     private void InitializeUIElements()
     {
-        if (directLightSlider != null)
+        if (skyExposureSlider != null)
         {
-            directLightSlider.minValue = 0f;
-            directLightSlider.maxValue = 3f;
-            directLightSlider.value = directLightIntensity;
-            directLightSlider.onValueChanged.AddListener(SetDirectLightIntensity);
+            skyExposureSlider.value = skyExposure;
+            skyExposureSlider.onValueChanged.AddListener(SetSkyExposure);
         }
 
-        if (ambientLightSlider != null)
+        if (skyRotationSlider != null)
         {
-            ambientLightSlider.minValue = 0f;
-            ambientLightSlider.maxValue = 3f;
-            ambientLightSlider.value = ambientLightIntensity;
-            ambientLightSlider.onValueChanged.AddListener(SetAmbientLightIntensity);
+            skyRotationSlider.value = skyRotation;
+            skyRotationSlider.onValueChanged.AddListener(SetSkyRotation);
         }
 
         if (ambientVolumeSlider != null)
         {
-            ambientVolumeSlider.minValue = 0f;
-            ambientVolumeSlider.maxValue = 1f;
             ambientVolumeSlider.value = ambientVolume;
             ambientVolumeSlider.onValueChanged.AddListener(SetAmbientVolume);
         }
     }
 
     // Public getters for environment properties
-    public float DirectLightIntensity => directLightIntensity;
-    public float AmbientLightIntensity => ambientLightIntensity;
+    public float SkyExposure => skyExposure;
+    public float SkyRotation => skyRotation;
     public float AmbientVolume => ambientVolume;
 }
