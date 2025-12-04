@@ -45,6 +45,7 @@ public class BrushController : MonoBehaviour
     
     // Artwork handler 2D/3D
     public ArtworkHandler artworkHandler;
+    public MessageLogger messageLogger;
 
     private void OnEnable()
     {   
@@ -91,18 +92,21 @@ public class BrushController : MonoBehaviour
     // Save current artwork to persistent data path (observer pattern)
     private void SaveArtwork()
     {
+        messageLogger.Log("Artwork Saved");
         artworkHandler.SaveArtwork();
     }
 
     // Load artworks from persistent data path (observer pattern)
     private void LoadArtwork()
     {
+        messageLogger.Log("Artwork Loaded");
         artworkHandler.LoadArtwork();
     }
 
     // Create new artwork (observer pattern)
     private void NewArtwork()
     {
+        messageLogger.Log("New Artwork Created");
         artworkHandler.NewArtwork();
     }
 
