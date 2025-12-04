@@ -133,6 +133,12 @@ public class ArtworkHandler2D : ArtworkHandler
         whiteboard.SetTexture(loadedTexture);
     }
 
+    // Clear the whiteboard texture (2D)
+    public override void ClearArtwork()
+    {
+        whiteboard.ClearTexture();
+    }
+
     public void ToggleEraseMode()
     {
         isErasing = !isErasing;

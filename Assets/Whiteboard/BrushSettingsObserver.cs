@@ -13,6 +13,7 @@ public class BrushSettingsObserver : MonoBehaviour
     public event Action<bool> On3DModeChanged;
     public event Action OnSaveArtwork;
     public event Action OnLoadArtwork;
+    public event Action OnNewArtwork;
 
     [Header("Brush Properties")]
     [SerializeField] private int brushSize = 50;
@@ -114,6 +115,12 @@ public class BrushSettingsObserver : MonoBehaviour
     public void LoadArtwork()
     {
         OnLoadArtwork?.Invoke();
+    }
+
+    // Invoked when New Artwork button is pressed
+    public void NewArtwork()
+    {
+        OnNewArtwork?.Invoke();
     }
 
     // Initialize UI elements and their listeners

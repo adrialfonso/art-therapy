@@ -63,4 +63,11 @@ public class Whiteboard : MonoBehaviour
         texture.SetPixels(newTexture.GetPixels());
         texture.Apply();
     }
+
+    // Clear the whiteboard to its original state
+    public void ClearTexture()
+    {
+        texture.SetPixels(originalTexture.GetPixels());
+        texture.Apply();
+    }
 }

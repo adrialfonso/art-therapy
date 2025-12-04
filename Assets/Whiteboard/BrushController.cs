@@ -100,6 +100,12 @@ public class BrushController : MonoBehaviour
         artworkHandler.LoadArtwork();
     }
 
+    // Create new artwork (observer pattern)
+    private void NewArtwork()
+    {
+        artworkHandler.NewArtwork();
+    }
+
     // Listener for brush size changes (observer pattern) (delegated to ArtworkHandler2D)
     private void OnBrushSizeChanged(int size)
     {
@@ -187,6 +193,7 @@ public class BrushController : MonoBehaviour
             brushSettings.On3DModeChanged += Toggle3DMode;
             brushSettings.OnSaveArtwork += SaveArtwork;
             brushSettings.OnLoadArtwork += LoadArtwork;
+            brushSettings.OnNewArtwork += NewArtwork;
         }
 
         if (leftController != null)

@@ -157,12 +157,7 @@ public class ArtworkHandler3D : ArtworkHandler
         string json = File.ReadAllText(files[controller.currentArtworkIndex]);
         LineCollection collection = JsonUtility.FromJson<LineCollection>(json);
 
-        // Clear current lines
-        foreach (var line in lineHistory)
-            Object.Destroy(line.gameObject);
-
-        lineHistory.Clear();
-        existingPoints.Clear();
+        ClearArtwork();
 
         // Reconstruct lines from loaded data
         foreach (var data in collection.lines)
@@ -177,5 +172,15 @@ public class ArtworkHandler3D : ArtworkHandler
             lineHistory.Add(newLine);
             existingPoints.AddRange(data.points);
         }
+    }
+
+    // Clear all 3D lines (3D)
+    public override void ClearArtwork()
+    {
+        foreach (var line in lineHistory)
+            Object.Destroy(line.gameObject);
+
+        lineHistory.Clear();
+        existingPoints.Clear();
     }
 }

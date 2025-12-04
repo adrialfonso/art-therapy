@@ -20,4 +20,11 @@ public abstract class ArtworkHandler
     public abstract void Undo();
     public abstract void SaveArtwork();
     public abstract void LoadArtwork();
+    public abstract void ClearArtwork();
+    
+    public virtual void NewArtwork()
+    {
+        ClearArtwork();
+        controller.currentArtworkIndex = -1;
+    }
 }
