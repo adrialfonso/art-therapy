@@ -8,15 +8,18 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/WhiteboardScene.unity
     guid: 4bda318dc319d944c857c1cc774b6242
-  - enabled: 1
+  - enabled: 0
     path: Assets/PolyRonin/Desert Village/Demo.unity
     guid: f98451b69fd7daf488fccbe1dd185d2a
-  - enabled: 1
+  - enabled: 0
     path: Assets/PolyRonin/Wild West Village/Demo.unity
     guid: d9e7a2c5d60d72c4c96ed84bcad0f020
-  - enabled: 1
+  - enabled: 0
     path: Assets/PolyRonin/Pine Forest Pack/Demo.unity
     guid: 4bc9c39831207aa4081f39b7af5f0288
+  - enabled: 1
+    path: Assets/Scenes/newscene.unity
+    guid: 37a2836ad30acb340ae0072400544f84
   m_configObjects:
     Unity.XR.PXR.Settings: {fileID: 11400000, guid: dec0963d08fc9df4e96f381f97172024, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 20e97c8b78a684449965a664dac07802, type: 2}
