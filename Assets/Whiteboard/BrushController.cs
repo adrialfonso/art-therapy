@@ -62,6 +62,7 @@ public class BrushController : MonoBehaviour
         OnAmbientVolumeChanged(environmentSettings.AmbientVolume);
 
         artworkHandler = is3DMode ? (ArtworkHandler)new ArtworkHandler3D(this) : new ArtworkHandler2D(this);
+        messageLogger.Log("Welcome to Art Therapy VR! Start creating your masterpiece.");
     }
 
     private void Update()
@@ -92,21 +93,18 @@ public class BrushController : MonoBehaviour
     // Save current artwork to persistent data path (observer pattern)
     private void SaveArtwork()
     {
-        messageLogger.Log("Artwork Saved");
         artworkHandler.SaveArtwork();
     }
 
     // Load artworks from persistent data path (observer pattern)
     private void LoadArtwork()
     {
-        messageLogger.Log("Artwork Loaded");
         artworkHandler.LoadArtwork();
     }
 
     // Create new artwork (observer pattern)
     private void NewArtwork()
     {
-        messageLogger.Log("New Artwork Created");
         artworkHandler.NewArtwork();
     }
 

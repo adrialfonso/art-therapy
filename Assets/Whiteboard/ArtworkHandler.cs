@@ -26,5 +26,6 @@ public abstract class ArtworkHandler
     {
         ClearArtwork();
         controller.currentArtworkIndex = -1;
+        controller.messageLogger.Log("New Artwork Created");
     }
 }

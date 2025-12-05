@@ -23,6 +23,7 @@ public class ArtworkHandler2D : ArtworkHandler
         InitializeMarkerStrategies();
         OnBrushSizeChanged(controller.brushSettings.BrushSize);
         OnBrushColorChanged(controller.brushSettings.BrushColor);
+        controller.messageLogger.Log("Whiteboard mode");
     }
 
     public override void HandleDrawing()
@@ -103,7 +104,7 @@ public class ArtworkHandler2D : ArtworkHandler
         }
         else
         {
-            fileName = $"Artwork_{System.DateTime.Now:yyyyMMdd_HHmmss}.png";
+            fileName = $"artwork2D_{System.DateTime.Now:yyyyMMdd_HHmmss}.png";
         }
 
         File.WriteAllBytes(Path.Combine(folderPath, fileName), bytes);
@@ -114,6 +115,8 @@ public class ArtworkHandler2D : ArtworkHandler
         // If it's a new file, update the index to the end
         if (!isOverwrite)
             controller.currentArtworkIndex = controller.savedWhiteboardArtworks.Length - 1;
+
+        controller.messageLogger.Log("Artwork Saved: " + fileName);
     }
 
     // Load artwork from persistent data path (2D)
@@ -131,6 +134,7 @@ public class ArtworkHandler2D : ArtworkHandler
         loadedTexture.LoadImage(fileData);
 
         whiteboard.SetTexture(loadedTexture);
+        controller.messageLogger.Log("Artwork Loaded: " + Path.GetFileName(controller.savedWhiteboardArtworks[controller.currentArtworkIndex]));
     }
 
     // Clear the whiteboard texture (2D)
@@ -142,6 +146,7 @@ public class ArtworkHandler2D : ArtworkHandler
     public void ToggleEraseMode()
     {
         isErasing = !isErasing;
+        controller.messageLogger.Log(isErasing ? "Eraser Mode Activated" : "Drawing Mode Activated");
     }
 
     public void OnBrushSizeChanged(int size)

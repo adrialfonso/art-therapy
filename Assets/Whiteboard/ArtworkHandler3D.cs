@@ -15,7 +15,7 @@ public class ArtworkHandler3D : ArtworkHandler
     private int index;
     private float snapRadius = 0.03f;
 
-    public ArtworkHandler3D(BrushController controller) : base(controller) { }
+    public ArtworkHandler3D(BrushController controller) : base(controller) { controller.messageLogger.Log("3D Brush mode"); }
 
     public override void HandleDrawing()
     {
@@ -138,10 +138,11 @@ public class ArtworkHandler3D : ArtworkHandler
         }
         else
         {
-            fileName = $"Artwork3D_{System.DateTime.Now:yyyyMMdd_HHmmss}.json";
+            fileName = $"artwork3D_{System.DateTime.Now:yyyyMMdd_HHmmss}.json";
         }
 
         File.WriteAllText(Path.Combine(folderPath, fileName), json);
+        controller.messageLogger.Log("Artwork Saved: " + fileName);
     }
 
     // Load artwork from persistent data path (3D)
@@ -172,6 +173,8 @@ public class ArtworkHandler3D : ArtworkHandler
             lineHistory.Add(newLine);
             existingPoints.AddRange(data.points);
         }
+
+        controller.messageLogger.Log("Artwork Loaded: " + Path.GetFileName(files[controller.currentArtworkIndex]));
     }
 
     // Clear all 3D lines (3D)

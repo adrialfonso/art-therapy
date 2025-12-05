@@ -5,13 +5,12 @@ using System.Collections;
 public class MessageLogger : MonoBehaviour
 {
     public TMP_Text logText;
-    public float displayTime = 3f;
+    public float displayTime = 2f;
 
     private Coroutine currentCoroutine;
 
     void Start()
     {
-        logText.text = "Hello!";
         StartCoroutine(HideAfterTime());
     }
 
