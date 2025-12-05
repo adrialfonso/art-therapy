@@ -21,11 +21,24 @@ public abstract class ArtworkHandler
     public abstract void SaveArtwork();
     public abstract void LoadArtwork();
     public abstract void ClearArtwork();
+    public abstract string[] GetArtworks();
     
+    // Create a new blank artwork
     public virtual void NewArtwork()
     {
         ClearArtwork();
         controller.currentArtworkIndex = -1;
         controller.messageLogger.Log("New Artwork Created");
+    }
+
+    // Delete the current artwork
+    public virtual void DeleteArtwork()
+    {
+        string filePath = controller.savedWhiteboardArtworks[controller.currentArtworkIndex];
+        File.Delete(filePath);
+        controller.currentArtworkIndex = -1;
+        ClearArtwork();
+        controller.savedWhiteboardArtworks = GetArtworks();
+        controller.messageLogger.Log("Deleted Artwork: " + Path.GetFileName(filePath));
     }
 }

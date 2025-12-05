@@ -126,36 +126,42 @@ public class ArtworkHandler3D : ArtworkHandler
 
         string json = JsonUtility.ToJson(collection, true);
 
+        // Create directory if it doesn't exist
         string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "3D");
         if (!Directory.Exists(folderPath))
             Directory.CreateDirectory(folderPath);
 
+        string[] files = GetArtworks();
         string fileName;
-        string[] files = Directory.GetFiles(folderPath, "*.json");
-        if (controller.currentArtworkIndex >= 0 && files.Length > 0 && controller.currentArtworkIndex < files.Length)
-        {
+
+        bool isOverwrite = controller.currentArtworkIndex >= 0 && files.Length > 0 && controller.currentArtworkIndex < files.Length;
+
+        if (isOverwrite)
             fileName = Path.GetFileName(files[controller.currentArtworkIndex]);
-        }
         else
-        {
             fileName = $"artwork3D_{System.DateTime.Now:yyyyMMdd_HHmmss}.json";
-        }
 
         File.WriteAllText(Path.Combine(folderPath, fileName), json);
+
+        // Refresh the saved artwork list
+        controller.savedWhiteboardArtworks = GetArtworks();
+
+        // Update current index if new artwork
+        if (!isOverwrite)
+            controller.currentArtworkIndex = controller.savedWhiteboardArtworks.Length - 1;
+
         controller.messageLogger.Log("Artwork Saved: " + fileName);
     }
 
     // Load artwork from persistent data path (3D)
     public override void LoadArtwork()
     {
-        string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "3D");
-        string[] files = Directory.GetFiles(folderPath, "*.json");
+        controller.savedWhiteboardArtworks = GetArtworks();
+        if (controller.savedWhiteboardArtworks.Length == 0) return;
 
-        if (files.Length == 0) return;
+        controller.currentArtworkIndex = (controller.currentArtworkIndex + 1) % controller.savedWhiteboardArtworks.Length;
 
-        controller.currentArtworkIndex = (controller.currentArtworkIndex + 1) % files.Length;
-
-        string json = File.ReadAllText(files[controller.currentArtworkIndex]);
+        string json = File.ReadAllText(controller.savedWhiteboardArtworks[controller.currentArtworkIndex]);
         LineCollection collection = JsonUtility.FromJson<LineCollection>(json);
 
         ClearArtwork();
@@ -174,10 +180,10 @@ public class ArtworkHandler3D : ArtworkHandler
             existingPoints.AddRange(data.points);
         }
 
-        controller.messageLogger.Log("Artwork Loaded: " + Path.GetFileName(files[controller.currentArtworkIndex]));
+        controller.messageLogger.Log("Artwork Loaded: " + Path.GetFileName(controller.savedWhiteboardArtworks[controller.currentArtworkIndex]));
     }
 
-    // Clear all 3D lines (3D)
+    // Clear all 3D lines
     public override void ClearArtwork()
     {
         foreach (var line in lineHistory)
@@ -185,5 +191,15 @@ public class ArtworkHandler3D : ArtworkHandler
 
         lineHistory.Clear();
         existingPoints.Clear();
+    }
+
+    // Refresh the list of saved artworks (3D)
+    public override string[] GetArtworks()
+    {
+        string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "3D");
+        if (!Directory.Exists(folderPath))
+            Directory.CreateDirectory(folderPath);
+
+        return Directory.GetFiles(folderPath, "*.json").OrderBy(f => File.GetCreationTime(f)).ToArray();
     }
 }

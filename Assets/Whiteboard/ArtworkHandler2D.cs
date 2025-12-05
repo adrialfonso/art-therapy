@@ -91,25 +91,21 @@ public class ArtworkHandler2D : ArtworkHandler
         if (!Directory.Exists(folderPath))
             Directory.CreateDirectory(folderPath);
 
+        string[] files = GetArtworks();
         string fileName;
-        bool isOverwrite = controller.currentArtworkIndex >= 0 && controller.savedWhiteboardArtworks != null && controller.currentArtworkIndex < controller.savedWhiteboardArtworks.Length;
+        bool isOverwrite = controller.currentArtworkIndex >= 0 && files.Length > 0 && controller.currentArtworkIndex < files.Length;
 
-        // If already loaded, overwrite the file
         if (isOverwrite)
-        {
-            fileName = Path.GetFileName(controller.savedWhiteboardArtworks[controller.currentArtworkIndex]);
-        }
+            fileName = Path.GetFileName(files[controller.currentArtworkIndex]);
         else
-        {
             fileName = $"artwork2D_{System.DateTime.Now:yyyyMMdd_HHmmss}.png";
-        }
 
         File.WriteAllBytes(Path.Combine(folderPath, fileName), bytes);
 
-        // Update the list of artworks
-        controller.savedWhiteboardArtworks = Directory.GetFiles(folderPath, "*.png");
+        // Refresh the saved artwork list
+        controller.savedWhiteboardArtworks = GetArtworks();
 
-        // If it's a new file, update the index to the end
+        // Update current index if new artwork
         if (!isOverwrite)
             controller.currentArtworkIndex = controller.savedWhiteboardArtworks.Length - 1;
 
@@ -119,9 +115,7 @@ public class ArtworkHandler2D : ArtworkHandler
     // Load artwork from persistent data path (2D)
     public override void LoadArtwork()
     {
-        string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
-
-        controller.savedWhiteboardArtworks = Directory.GetFiles(folderPath, "*.png").OrderBy(f => File.GetCreationTime(f)).ToArray();
+        controller.savedWhiteboardArtworks = GetArtworks();
         if (controller.savedWhiteboardArtworks.Length == 0) return;
 
         controller.currentArtworkIndex = (controller.currentArtworkIndex + 1) % controller.savedWhiteboardArtworks.Length;
@@ -138,6 +132,16 @@ public class ArtworkHandler2D : ArtworkHandler
     public override void ClearArtwork()
     {
         controller.whiteboard.ClearTexture();
+    }
+
+    // Refresh the list of saved artworks (2D)
+    public override string[] GetArtworks()
+    {
+        string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
+        if (!Directory.Exists(folderPath))
+            Directory.CreateDirectory(folderPath);
+
+        return Directory.GetFiles(folderPath, "*.png").OrderBy(f => File.GetCreationTime(f)).ToArray();
     }
 
     public void ToggleEraseMode()

@@ -83,6 +83,7 @@ public class BrushController : MonoBehaviour
     {
         is3DMode = active;
 
+        // Hide/Show whiteboard based on mode
         if (is3DMode)
         {
             artworkHandler = new ArtworkHandler3D(this);
@@ -119,6 +120,12 @@ public class BrushController : MonoBehaviour
     private void NewArtwork()
     {
         artworkHandler.NewArtwork();
+    }
+
+    // Delete current artwork (observer pattern)
+    private void DeleteArtwork()
+    {
+        artworkHandler.DeleteArtwork();
     }
 
     // Listener for brush size changes (observer pattern) (delegated to ArtworkHandler2D)
@@ -209,6 +216,7 @@ public class BrushController : MonoBehaviour
             brushSettings.OnSaveArtwork += SaveArtwork;
             brushSettings.OnLoadArtwork += LoadArtwork;
             brushSettings.OnNewArtwork += NewArtwork;
+            brushSettings.OnDeleteArtwork += DeleteArtwork;
         }
 
         if (leftController != null)

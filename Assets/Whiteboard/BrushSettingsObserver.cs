@@ -14,6 +14,7 @@ public class BrushSettingsObserver : MonoBehaviour
     public event Action OnSaveArtwork;
     public event Action OnLoadArtwork;
     public event Action OnNewArtwork;
+    public event Action OnDeleteArtwork;
 
     [Header("Brush Properties")]
     [SerializeField] private int brushSize = 50;
@@ -121,6 +122,12 @@ public class BrushSettingsObserver : MonoBehaviour
     public void NewArtwork()
     {
         OnNewArtwork?.Invoke();
+    }
+
+    // Invoked when Delete Artwork button is pressed
+    public void DeleteArtwork()
+    {
+        OnDeleteArtwork?.Invoke();
     }
 
     // Initialize UI elements and their listeners
