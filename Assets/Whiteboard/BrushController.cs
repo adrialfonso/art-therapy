@@ -44,6 +44,7 @@ public class BrushController : MonoBehaviour
     public string[] savedWhiteboardArtworks; 
     
     // Artwork handler 2D/3D
+    public Whiteboard whiteboard;
     public ArtworkHandler artworkHandler;
     public MessageLogger messageLogger;
 
@@ -81,7 +82,19 @@ public class BrushController : MonoBehaviour
     private void Toggle3DMode(bool active)
     {
         is3DMode = active;
-        artworkHandler = is3DMode ? (ArtworkHandler)new ArtworkHandler3D(this) : new ArtworkHandler2D(this);
+
+        if (is3DMode)
+        {
+            artworkHandler = new ArtworkHandler3D(this);
+            messageLogger.Log("3D Brush mode");
+            whiteboard.gameObject.SetActive(false);
+        }
+        else
+        {
+            artworkHandler = new ArtworkHandler2D(this);
+            messageLogger.Log("2D Whiteboard mode");
+            whiteboard.gameObject.SetActive(true);
+        }
     }
 
     // Perform undo (observer pattern)

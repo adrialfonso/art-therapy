@@ -9,7 +9,6 @@ using System.IO;
 // Implementation for 2D whiteboard drawing
 public class ArtworkHandler2D : ArtworkHandler
 {
-    private Whiteboard whiteboard;
     private bool touchedLastFrame = false;
     private bool savedUndoState = false;
     private Vector2 lastTouchPos;
@@ -23,7 +22,6 @@ public class ArtworkHandler2D : ArtworkHandler
         InitializeMarkerStrategies();
         OnBrushSizeChanged(controller.brushSettings.BrushSize);
         OnBrushColorChanged(controller.brushSettings.BrushColor);
-        controller.messageLogger.Log("Whiteboard mode");
     }
 
     public override void HandleDrawing()
@@ -48,25 +46,24 @@ public class ArtworkHandler2D : ArtworkHandler
 
             // Get or update whiteboard reference
             Whiteboard hitBoard = hit.transform.GetComponent<Whiteboard>();
-            if (hitBoard != whiteboard)
+            if (hitBoard != controller.whiteboard)
             {
-                whiteboard = hitBoard;
+                controller.whiteboard = hitBoard;
                 savedUndoState = false;
             }
 
-            Vector2 touchPos = new Vector2(hit.textureCoord.x * whiteboard.textureSize.x, hit.textureCoord.y * whiteboard.textureSize.y);
-
+            Vector2 touchPos = new Vector2(hit.textureCoord.x * controller.whiteboard.textureSize.x, hit.textureCoord.y * controller.whiteboard.textureSize.y);
             // Save undo state if not already saved
             if (!savedUndoState)
             {
-                whiteboard.SaveUndoState();
+                controller.whiteboard.SaveUndoState();
                 savedUndoState = true;
             }
 
             // Draw using the current drawing strategy
             if (touchedLastFrame)
             {
-                currentStrategy.Draw(whiteboard, touchPos, lastTouchPos, controller.brushSettings.BrushSize, brushColors, isErasing);
+                currentStrategy.Draw(controller.whiteboard, touchPos, lastTouchPos, controller.brushSettings.BrushSize, brushColors, isErasing);
             }
 
             lastTouchPos = touchPos;
@@ -80,14 +77,14 @@ public class ArtworkHandler2D : ArtworkHandler
 
     public override void Undo()
     {
-        if (whiteboard != null)
-            whiteboard.Undo();
+        if (controller.whiteboard != null)
+            controller.whiteboard.Undo();
     }
 
     // Save current artwork to persistent data path (2D)
     public override void SaveArtwork()
     {
-        Texture2D texture = whiteboard.GetTexture();
+        Texture2D texture = controller.whiteboard.GetTexture();
         byte[] bytes = texture.EncodeToPNG();
         string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
 
@@ -133,14 +130,14 @@ public class ArtworkHandler2D : ArtworkHandler
         Texture2D loadedTexture = new Texture2D(2, 2);
         loadedTexture.LoadImage(fileData);
 
-        whiteboard.SetTexture(loadedTexture);
+        controller.whiteboard.SetTexture(loadedTexture);
         controller.messageLogger.Log("Artwork Loaded: " + Path.GetFileName(controller.savedWhiteboardArtworks[controller.currentArtworkIndex]));
     }
 
     // Clear the whiteboard texture (2D)
     public override void ClearArtwork()
     {
-        whiteboard.ClearTexture();
+        controller.whiteboard.ClearTexture();
     }
 
     public void ToggleEraseMode()

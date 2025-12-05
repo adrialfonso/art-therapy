@@ -7376,6 +7376,7 @@ MonoBehaviour:
   isDrawingRight: 0
   currentArtworkIndex: -1
   savedWhiteboardArtworks: []
+  whiteboard: {fileID: 8011878003358091863}
   messageLogger: {fileID: 3674753057064332127}
 --- !u!1 &8011878002599107695
 GameObject:

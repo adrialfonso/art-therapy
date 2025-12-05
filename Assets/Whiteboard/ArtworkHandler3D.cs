@@ -15,7 +15,7 @@ public class ArtworkHandler3D : ArtworkHandler
     private int index;
     private float snapRadius = 0.03f;
 
-    public ArtworkHandler3D(BrushController controller) : base(controller) { controller.messageLogger.Log("3D Brush mode"); }
+    public ArtworkHandler3D(BrushController controller) : base(controller) { }
 
     public override void HandleDrawing()
     {
