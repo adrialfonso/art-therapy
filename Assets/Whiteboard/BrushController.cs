@@ -149,6 +149,28 @@ public class BrushController : MonoBehaviour
             handler2D.OnStrategyChanged(index);
     }
 
+    // Listener for whiteboard width changes (observer pattern)
+    private void OnWhiteboardWidthChanged(float width)
+    {
+        if (whiteboard != null)
+        {
+            Vector3 scale = whiteboard.transform.localScale;
+            scale.x = width;
+            whiteboard.transform.localScale = scale;
+        }
+    }
+
+    // Listener for whiteboard height changes (observer pattern)
+    private void OnWhiteboardHeightChanged(float height)
+    {
+        if (whiteboard != null)
+        {
+            Vector3 scale = whiteboard.transform.localScale;
+            scale.z = height;
+            whiteboard.transform.localScale = scale;
+        }
+    }
+
     // Listener for changes in the sky exposure of the environment (observer pattern)
     private void OnSkyExposureChanged(float exposure)
     {
@@ -217,6 +239,8 @@ public class BrushController : MonoBehaviour
             brushSettings.OnLoadArtwork += LoadArtwork;
             brushSettings.OnNewArtwork += NewArtwork;
             brushSettings.OnDeleteArtwork += DeleteArtwork;
+            brushSettings.OnWhiteboardWidthChanged += OnWhiteboardWidthChanged;
+            brushSettings.OnWhiteboardHeightChanged += OnWhiteboardHeightChanged;
         }
 
         if (leftController != null)

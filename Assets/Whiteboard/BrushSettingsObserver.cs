@@ -6,21 +6,27 @@ using System.Linq;
 
 public class BrushSettingsObserver : MonoBehaviour
 {
-    // Events to notify subscribers of brush property changes
+    // Events to notify subscribers of brush property changes (common 2D/3D)
     public event Action<int> OnBrushSizeChanged;
     public event Action<Color> OnBrushColorChanged;
-    public event Action<int> OnStrategyChanged;
     public event Action<bool> On3DModeChanged;
     public event Action OnSaveArtwork;
     public event Action OnLoadArtwork;
     public event Action OnNewArtwork;
     public event Action OnDeleteArtwork;
 
+    // 2D brush settings events
+    public event Action<int> OnStrategyChanged;
+    public event Action<float> OnWhiteboardWidthChanged;
+    public event Action<float> OnWhiteboardHeightChanged;
+
     [Header("Brush Properties")]
     [SerializeField] private int brushSize = 50;
     [SerializeField] private Color brushColor = Color.red;
     [SerializeField, Range(1, 100)] private float brushBrightness = 50f;
     [SerializeField] private int strategyIndex = 0;
+    [SerializeField] private float whiteboardWidth = 0.5f;
+    [SerializeField] private float whiteboardHeight = 0.25f;
 
     [Header("UI Elements")]
     public Slider brushSizeSlider;
@@ -29,6 +35,10 @@ public class BrushSettingsObserver : MonoBehaviour
     public Image colorPreview;
     public Slider brightnessSlider;
     public TMP_Text brightnessText;
+    public Slider whiteboardWidthSlider;
+    public TMP_Text whiteboardWidthText;
+    public Slider whiteboardHeightSlider;
+    public TMP_Text whiteboardHeightText;
 
     private Color baseColor;
 
@@ -44,6 +54,8 @@ public class BrushSettingsObserver : MonoBehaviour
         if (brushSizeText != null) brushSizeText.text = brushSize.ToString();
         if (colorPreview != null) colorPreview.color = brushColor;
         if (brightnessText != null) brightnessText.text = Mathf.RoundToInt(brushBrightness).ToString();
+        if (whiteboardWidthText != null) whiteboardWidthText.text = whiteboardWidth.ToString("F2");
+        if (whiteboardHeightText != null) whiteboardHeightText.text = whiteboardHeight.ToString("F2");
     }
 
     // Update the brush color based on base color and brightness
@@ -130,6 +142,22 @@ public class BrushSettingsObserver : MonoBehaviour
         OnDeleteArtwork?.Invoke();
     }
 
+    // Invoked when whiteboard width slider value changes
+    public void SetWhiteboardWidth(float width)
+    {
+        whiteboardWidth = width;
+        OnWhiteboardWidthChanged?.Invoke(whiteboardWidth);
+        UpdateUI();
+    }
+
+    // Invoked when whiteboard height slider value changes
+    public void SetWhiteboardHeight(float height)
+    {
+        whiteboardHeight = height;
+        OnWhiteboardHeightChanged?.Invoke(whiteboardHeight);
+        UpdateUI();
+    }
+
     // Initialize UI elements and their listeners
     private void InitializeUIElements()
     {
@@ -154,6 +182,22 @@ public class BrushSettingsObserver : MonoBehaviour
             brightnessSlider.value = brushBrightness;
             brightnessSlider.onValueChanged.AddListener(SetBrightness);
         }
+
+        if (whiteboardWidthSlider != null)
+        {
+            whiteboardWidthSlider.minValue = 0.1f;
+            whiteboardWidthSlider.maxValue = 1.0f;
+            whiteboardWidthSlider.value = whiteboardWidth;
+            whiteboardWidthSlider.onValueChanged.AddListener(SetWhiteboardWidth);
+        }
+
+        if (whiteboardHeightSlider != null)
+        {
+            whiteboardHeightSlider.minValue = 0.1f;
+            whiteboardHeightSlider.maxValue = 1.0f;
+            whiteboardHeightSlider.value = whiteboardHeight;
+            whiteboardHeightSlider.onValueChanged.AddListener(SetWhiteboardHeight);
+        }
     }
 
     // Public getters for brush properties
@@ -161,4 +205,6 @@ public class BrushSettingsObserver : MonoBehaviour
     public Color BrushColor => brushColor;
     public float BrushBrightness => brushBrightness;
     public int StrategyIndex => strategyIndex;
+    public float WhiteboardWidth => whiteboardWidth;
+    public float WhiteboardHeight => whiteboardHeight;
 }
