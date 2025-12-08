@@ -28,17 +28,25 @@ public class BrushSettingsObserver : MonoBehaviour
     [SerializeField] private float whiteboardWidth = 0.5f;
     [SerializeField] private float whiteboardHeight = 0.25f;
 
-    [Header("UI Elements")]
-    public Slider brushSizeSlider;
-    public TMP_Text brushSizeText;
-    public Slider colorSlider;
-    public Image colorPreview;
-    public Slider brightnessSlider;
-    public TMP_Text brightnessText;
+    [Header("UI Elements (2D)")]
+    public Slider brushSizeSlider2D;
+    public TMP_Text brushSizeText2D;
+    public Slider colorSlider2D;
+    public Image colorPreview2D;
+    public Slider brightnessSlider2D;
+    public TMP_Text brightnessText2D;
     public Slider whiteboardWidthSlider;
     public TMP_Text whiteboardWidthText;
     public Slider whiteboardHeightSlider;
     public TMP_Text whiteboardHeightText;
+
+    [Header("UI Elements (3D)")]
+    public Slider brushSizeSlider3D;
+    public TMP_Text brushSizeText3D;
+    public Slider colorSlider3D;
+    public Image colorPreview3D;
+    public Slider brightnessSlider3D;
+    public TMP_Text brightnessText3D;
 
     private Color baseColor;
 
@@ -51,9 +59,12 @@ public class BrushSettingsObserver : MonoBehaviour
     // Update UI elements to reflect current brush settings
     private void UpdateUI()
     {
-        if (brushSizeText != null) brushSizeText.text = brushSize.ToString();
-        if (colorPreview != null) colorPreview.color = brushColor;
-        if (brightnessText != null) brightnessText.text = Mathf.RoundToInt(brushBrightness).ToString();
+        if (brushSizeText2D != null) brushSizeText2D.text = brushSize.ToString();
+        if (brushSizeText3D != null) brushSizeText3D.text = brushSize.ToString();
+        if (colorPreview2D != null) colorPreview2D.color = brushColor;
+        if (colorPreview3D != null) colorPreview3D.color = brushColor;
+        if (brightnessText2D != null) brightnessText2D.text = Mathf.RoundToInt(brushBrightness).ToString();
+        if (brightnessText3D != null) brightnessText3D.text = Mathf.RoundToInt(brushBrightness).ToString();
         if (whiteboardWidthText != null) whiteboardWidthText.text = whiteboardWidth.ToString("F2");
         if (whiteboardHeightText != null) whiteboardHeightText.text = whiteboardHeight.ToString("F2");
     }
@@ -161,26 +172,48 @@ public class BrushSettingsObserver : MonoBehaviour
     // Initialize UI elements and their listeners
     private void InitializeUIElements()
     {
-        if (brushSizeSlider != null)
+        if (brushSizeSlider2D != null)
         {
-            brushSizeSlider.minValue = 1;
-            brushSizeSlider.maxValue = 100;
-            brushSizeSlider.value = brushSize;
-            brushSizeSlider.onValueChanged.AddListener(SetBrushSize);
+            brushSizeSlider2D.minValue = 1;
+            brushSizeSlider2D.maxValue = 100;
+            brushSizeSlider2D.value = brushSize;
+            brushSizeSlider2D.onValueChanged.AddListener(SetBrushSize);
         }
 
-        if (colorSlider != null)
+        if (brushSizeSlider3D != null)
         {
-            colorSlider.onValueChanged.AddListener(SetBrushHue);
+            brushSizeSlider3D.minValue = 1;
+            brushSizeSlider3D.maxValue = 100;
+            brushSizeSlider3D.value = brushSize;
+            brushSizeSlider3D.onValueChanged.AddListener(SetBrushSize);
+        }
+
+        if (colorSlider2D != null)
+        {
+            colorSlider2D.onValueChanged.AddListener(SetBrushHue);
             baseColor = brushColor;
         }
 
-        if (brightnessSlider != null)
+        if (colorSlider3D != null)
         {
-            brightnessSlider.minValue = 1;
-            brightnessSlider.maxValue = 100;
-            brightnessSlider.value = brushBrightness;
-            brightnessSlider.onValueChanged.AddListener(SetBrightness);
+            colorSlider3D.onValueChanged.AddListener(SetBrushHue);
+            baseColor = brushColor;
+        }
+
+        if (brightnessSlider2D != null)
+        {
+            brightnessSlider2D.minValue = 1;
+            brightnessSlider2D.maxValue = 100;
+            brightnessSlider2D.value = brushBrightness;
+            brightnessSlider2D.onValueChanged.AddListener(SetBrightness);
+        }
+
+        if (brightnessSlider3D != null)
+        {
+            brightnessSlider3D.minValue = 1;
+            brightnessSlider3D.maxValue = 100;
+            brightnessSlider3D.value = brushBrightness;
+            brightnessSlider3D.onValueChanged.AddListener(SetBrightness);
         }
 
         if (whiteboardWidthSlider != null)
@@ -194,7 +227,7 @@ public class BrushSettingsObserver : MonoBehaviour
         if (whiteboardHeightSlider != null)
         {
             whiteboardHeightSlider.minValue = 0.1f;
-            whiteboardHeightSlider.maxValue = 1.0f;
+            whiteboardHeightSlider.maxValue = 0.3f;
             whiteboardHeightSlider.value = whiteboardHeight;
             whiteboardHeightSlider.onValueChanged.AddListener(SetWhiteboardHeight);
         }

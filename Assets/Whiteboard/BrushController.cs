@@ -28,6 +28,10 @@ public class BrushController : MonoBehaviour
     [Header("Ambient Music Options")]
     [SerializeField] public AudioClip[] ambientMusicOptions;
     [SerializeField] public AudioSource ambientSource;
+
+    [Header("UI Canvases")]
+    [SerializeField] private GameObject canvas2DUI;
+    [SerializeField] private GameObject canvas3DUI;
     
     [Header("3D Mode")]
     [SerializeField] public Transform rightTipTransform;   
@@ -62,7 +66,7 @@ public class BrushController : MonoBehaviour
         OnSkyRotationChanged(environmentSettings.SkyRotation);
         OnAmbientVolumeChanged(environmentSettings.AmbientVolume);
 
-        artworkHandler = is3DMode ? (ArtworkHandler)new ArtworkHandler3D(this) : new ArtworkHandler2D(this);
+        Toggle3DMode(is3DMode);
         messageLogger.Log("Welcome to Art Therapy VR! Start creating your masterpiece.");
     }
 
@@ -96,6 +100,9 @@ public class BrushController : MonoBehaviour
             messageLogger.Log("2D Whiteboard mode");
             whiteboard.gameObject.SetActive(true);
         }
+
+        canvas2DUI.SetActive(!is3DMode);
+        canvas3DUI.SetActive(is3DMode);
     }
 
     // Perform undo (observer pattern)

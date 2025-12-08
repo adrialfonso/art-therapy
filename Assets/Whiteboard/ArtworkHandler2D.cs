@@ -44,11 +44,15 @@ public class ArtworkHandler2D : ArtworkHandler
         {
             if (!hit.transform.CompareTag("Whiteboard")) return;
 
-            // Get whiteboard reference
-            controller.whiteboard = hit.transform.GetComponent<Whiteboard>();;
-            savedUndoState = false;
+            Whiteboard hitBoard = hit.transform.GetComponent<Whiteboard>();
+            if (hitBoard != controller.whiteboard)
+            {
+                controller.whiteboard = hitBoard;
+                savedUndoState = false;
+            }
 
             Vector2 touchPos = new Vector2(hit.textureCoord.x * controller.whiteboard.textureSize.x, hit.textureCoord.y * controller.whiteboard.textureSize.y);
+            
             // Save undo state if not already saved
             if (!savedUndoState)
             {
