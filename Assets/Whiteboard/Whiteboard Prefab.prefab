@@ -2540,6 +2540,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 230497202562534243}
+  - component: {fileID: 2192913990794145312}
   m_Layer: 0
   m_Name: Tip
   m_TagString: Untagged
@@ -2555,13 +2556,30 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1862310859489956551}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.005, z: 0.04}
+  m_LocalPosition: {x: -0.0075, y: 0, z: 0.05}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8011878003700418157}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2192913990794145312
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1862310859489956551}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 218be830a139784448f6e68797618faf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tip: {fileID: 230497202562534243}
+  brushSettings: {fileID: 8011878002815430114}
+  lineRenderer: {fileID: 3720165347765393665}
+  minSize: 0.02
+  maxSize: 0.05
 --- !u!1 &1950658069071637026
 GameObject:
   m_ObjectHideFlags: 0
@@ -10687,6 +10705,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8029506911407467635}
+  - component: {fileID: 5957036000827431179}
   m_Layer: 0
   m_Name: Tip
   m_TagString: Untagged
@@ -10702,13 +10721,30 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7819662773309761268}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.005, z: 0.04}
+  m_LocalPosition: {x: 0.0075, y: 0, z: 0.05}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8011878002373816869}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5957036000827431179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7819662773309761268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 218be830a139784448f6e68797618faf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tip: {fileID: 8029506911407467635}
+  brushSettings: {fileID: 8011878002815430114}
+  lineRenderer: {fileID: 3720165347765393665}
+  minSize: 0.02
+  maxSize: 0.05
 --- !u!1 &7901765868173802878
 GameObject:
   m_ObjectHideFlags: 0
@@ -12927,7 +12963,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e988983f96fe1dd48800bcdfc82f23e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_LineWidth: 0.002
+  m_LineWidth: 0.0015
   m_OverrideInteractorLineLength: 1
   m_LineLength: 10
   m_WidthCurve:
@@ -12956,8 +12992,8 @@ MonoBehaviour:
     m_RotationOrder: 4
   m_ValidColorGradient:
     serializedVersion: 2
-    key0: {r: 1, g: 0, b: 0, a: 1}
-    key1: {r: 1, g: 0, b: 0, a: 1}
+    key0: {r: 0.21076608, g: 1, b: 0, a: 1}
+    key1: {r: 0.21076608, g: 1, b: 0, a: 1}
     key2: {r: 0, g: 0, b: 0, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
     key4: {r: 0, g: 0, b: 0, a: 0}
@@ -16278,7 +16314,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e988983f96fe1dd48800bcdfc82f23e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_LineWidth: 0.002
+  m_LineWidth: 0.0015
   m_OverrideInteractorLineLength: 1
   m_LineLength: 10
   m_WidthCurve:
@@ -16307,8 +16343,8 @@ MonoBehaviour:
     m_RotationOrder: 4
   m_ValidColorGradient:
     serializedVersion: 2
-    key0: {r: 1, g: 0, b: 0, a: 1}
-    key1: {r: 1, g: 0, b: 0, a: 1}
+    key0: {r: 0.21076608, g: 1, b: 0, a: 1}
+    key1: {r: 0.21076608, g: 1, b: 0, a: 1}
     key2: {r: 0, g: 0, b: 0, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
     key4: {r: 0, g: 0, b: 0, a: 0}
