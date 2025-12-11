@@ -20,6 +20,9 @@ public class BrushSettingsObserver : MonoBehaviour
     public event Action<float> OnWhiteboardWidthChanged;
     public event Action<float> OnWhiteboardHeightChanged;
 
+    // 3D brush settings events
+    public event Action<float> OnBrushCurveChanged;
+
     [Header("Brush Properties")]
     [SerializeField] private int brushSize = 50;
     [SerializeField] private Color brushColor = Color.red;
@@ -27,6 +30,7 @@ public class BrushSettingsObserver : MonoBehaviour
     [SerializeField] private int strategyIndex = 0;
     [SerializeField] private float whiteboardWidth = 0.5f;
     [SerializeField] private float whiteboardHeight = 0.25f;
+    [SerializeField] private float brushCurve = 0.5f;
 
     [Header("UI Elements (2D)")]
     public Slider brushSizeSlider2D;
@@ -47,6 +51,8 @@ public class BrushSettingsObserver : MonoBehaviour
     public Image colorPreview3D;
     public Slider brightnessSlider3D;
     public TMP_Text brightnessText3D;
+    public Slider brushCurveSlider;
+    public TMP_Text brushCurveText;
 
     private Color baseColor;
 
@@ -67,6 +73,7 @@ public class BrushSettingsObserver : MonoBehaviour
         if (brightnessText3D != null) brightnessText3D.text = Mathf.RoundToInt(brushBrightness).ToString();
         if (whiteboardWidthText != null) whiteboardWidthText.text = whiteboardWidth.ToString("F2");
         if (whiteboardHeightText != null) whiteboardHeightText.text = whiteboardHeight.ToString("F2");
+        if (brushCurveText != null) brushCurveText.text = brushCurve.ToString("F2");
     }
 
     // Update the brush color based on base color and brightness
@@ -169,6 +176,14 @@ public class BrushSettingsObserver : MonoBehaviour
         UpdateUI();
     }
 
+    // Invoked when brush curve slider value changes
+    public void SetBrushCurve(float curve)
+    {
+        brushCurve = curve;
+        OnBrushCurveChanged?.Invoke(brushCurve);
+        UpdateUI();
+    }
+
     // Initialize UI elements and their listeners
     private void InitializeUIElements()
     {
@@ -231,6 +246,14 @@ public class BrushSettingsObserver : MonoBehaviour
             whiteboardHeightSlider.value = whiteboardHeight;
             whiteboardHeightSlider.onValueChanged.AddListener(SetWhiteboardHeight);
         }
+
+        if (brushCurveSlider != null)
+        {
+            brushCurveSlider.minValue = 0.0f;
+            brushCurveSlider.maxValue = 1.0f;
+            brushCurveSlider.value = brushCurve;
+            brushCurveSlider.onValueChanged.AddListener(SetBrushCurve);
+        }
     }
 
     // Public getters for brush properties
@@ -240,4 +263,5 @@ public class BrushSettingsObserver : MonoBehaviour
     public int StrategyIndex => strategyIndex;
     public float WhiteboardWidth => whiteboardWidth;
     public float WhiteboardHeight => whiteboardHeight;
+    public float BrushCurve => brushCurve;
 }

@@ -34,11 +34,17 @@ public class ArtworkHandler3D : ArtworkHandler
                 currentLine.material.color = controller.brushSettings.BrushColor;
 
                 float baseWidth = controller.brushSettings.BrushSize * 0.0025f;
+                float curve = controller.brushSettings.BrushCurve;
+                
                 AnimationCurve brushCurve = new AnimationCurve(
-                    new Keyframe(0f, 0.5f),
-                    new Keyframe(0.5f, 1f),
-                    new Keyframe(1f, 0.5f)
+                    new Keyframe(0f, curve),  
+                    new Keyframe(0.5f, 1f), 
+                    new Keyframe(1f, curve)    
                 );
+
+                brushCurve.SmoothTangents(0, 0f);
+                brushCurve.SmoothTangents(1, 0f);
+                brushCurve.SmoothTangents(2, 0f);
 
                 currentLine.widthMultiplier = baseWidth;
                 currentLine.widthCurve = brushCurve;
