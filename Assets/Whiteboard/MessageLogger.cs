@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class MessageLogger : MonoBehaviour
 {
@@ -10,12 +11,26 @@ public class MessageLogger : MonoBehaviour
 
     private Coroutine currentCoroutine;
 
+    // Static list to hold all instances of MessageLogger
+    private static List<MessageLogger> allLoggers = new List<MessageLogger>();
+
     void Start()
     {
+        allLoggers.Add(this);
         SetAlpha(0);
     }
 
+    // This method logs a message to all instances of MessageLogger
     public void Log(string message)
+    {
+        foreach (var logger in allLoggers)
+        {
+            logger.InternalLog(message);
+        }
+    }
+
+    // Internal method to handle logging for this instance
+    private void InternalLog(string message)
     {
         if (currentCoroutine != null)
             StopCoroutine(currentCoroutine);
