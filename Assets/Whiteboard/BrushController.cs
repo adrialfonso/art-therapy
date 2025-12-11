@@ -79,6 +79,8 @@ public class BrushController : MonoBehaviour
     {
         if (artworkHandler is ArtworkHandler2D handler2D)
             handler2D.ToggleEraseMode();
+
+        audioSettings.PlaySoundEffect("snap");
     }
 
     // Toggle between 2D and 3D drawing modes (observer pattern) 
@@ -108,6 +110,7 @@ public class BrushController : MonoBehaviour
     private void Undo()
     {
         artworkHandler.Undo();
+        audioSettings.PlaySoundEffect("snap");
     }
 
     // Save current artwork to persistent data path (observer pattern)
