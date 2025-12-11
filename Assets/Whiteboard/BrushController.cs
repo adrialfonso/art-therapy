@@ -22,12 +22,11 @@ public class BrushController : MonoBehaviour
     [Header("Environment Settings Observer")]
     [SerializeField] public EnvironmentSettingsObserver environmentSettings;
 
+    [Header("Audio Manager")]
+    [SerializeField] private AudioSettings audioSettings;
+
     [Header("Skybox Options")]
     [SerializeField] public Material[] skyboxOptions;
-
-    [Header("Ambient Music Options")]
-    [SerializeField] public AudioClip[] ambientMusicOptions;
-    [SerializeField] public AudioSource ambientSource;
 
     [Header("UI Canvases")]
     [SerializeField] private GameObject canvas2DUI;
@@ -60,8 +59,8 @@ public class BrushController : MonoBehaviour
     private void Start()
     {
         // Initialize environment
+        audioSettings.PlayRandomAmbientMusic();
         SelectRandomSkybox();
-        SelectRandomAmbientMusic();
         OnSkyExposureChanged(environmentSettings.SkyExposure);
         OnSkyRotationChanged(environmentSettings.SkyRotation);
         OnAmbientVolumeChanged(environmentSettings.AmbientVolume);
@@ -201,8 +200,7 @@ public class BrushController : MonoBehaviour
     // Listener for changes in ambient volume of the environment (observer pattern)
     private void OnAmbientVolumeChanged(float volume)
     {
-        if (ambientSource != null)
-            ambientSource.volume = volume;
+        audioSettings.SetAmbientVolume(volume);
     }
 
     // Select random skybox (button triggered)
@@ -212,24 +210,6 @@ public class BrushController : MonoBehaviour
         int index = Random.Range(0, skyboxOptions.Length);
         RenderSettings.skybox = skyboxOptions[index];
         DynamicGI.UpdateEnvironment();
-    }
-
-    // Select random ambient music (button triggered)
-    public void SelectRandomAmbientMusic()
-    {
-        if (ambientMusicOptions == null || ambientMusicOptions.Length == 0) return;
-
-        if (ambientSource == null)
-            ambientSource = gameObject.AddComponent<AudioSource>();
-
-        int index = Random.Range(0, ambientMusicOptions.Length);
-
-        ambientSource.clip = ambientMusicOptions[index];
-        ambientSource.loop = true;
-        ambientSource.volume = 0.1f;
-        ambientSource.playOnAwake = false;
-        ambientSource.spatialBlend = 0f;
-        ambientSource.Play();
     }
 
     // Initialize subscriptions to observer events
