@@ -13730,6 +13730,10 @@ MonoBehaviour:
   skyboxOptions:
   - {fileID: 2100000, guid: d267332d4c376c74d88e8d293a2b12df, type: 2}
   - {fileID: 2100000, guid: aee06223f1ae82d4ba3fc02698373190, type: 2}
+  - {fileID: 2100000, guid: 6d0947ae5771e8f4b9ec57e69750bb53, type: 2}
+  - {fileID: 2100000, guid: aee06223f1ae82d4ba3fc02698373190, type: 2}
+  - {fileID: 2100000, guid: 87f1299014d45ad4ebfa64d86beb393f, type: 2}
+  - {fileID: 2100000, guid: 7b6dad80e4ec4d74c8cad8702e8eca26, type: 2}
   canvas2DUI: {fileID: 8011878003508722539}
   canvas3DUI: {fileID: 7097020377866398164}
   rightTipTransform: {fileID: 8029506911407467635}
