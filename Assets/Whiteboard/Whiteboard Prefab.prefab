@@ -3907,9 +3907,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 8011878002585612124}
-        m_TargetAssemblyTypeName: BrushController, Assembly-CSharp
-        m_MethodName: SelectRandomAmbientMusic
+      - m_Target: {fileID: 41906709017154320}
+        m_TargetAssemblyTypeName: AudioSettings, Assembly-CSharp
+        m_MethodName: PlayRandomAmbientMusic
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
