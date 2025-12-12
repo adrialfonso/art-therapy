@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -13,7 +14,7 @@ public class ArtworkHandler3D : ArtworkHandler
     private List<Vector3> existingPoints = new List<Vector3>();
     private List<LineRenderer> lineHistory = new List<LineRenderer>();
     private int index;
-    private float snapRadius = 0.03f;
+    private float snapRadius = 0.015f;
 
     public ArtworkHandler3D(BrushController controller) : base(controller) { }
 
@@ -33,7 +34,7 @@ public class ArtworkHandler3D : ArtworkHandler
                 currentLine = Object.Instantiate(controller.linePrefab);
                 currentLine.material.color = controller.brushSettings.BrushColor;
 
-                float baseWidth = controller.brushSettings.BrushSize * 0.0025f;
+                float baseWidth = controller.brushSettings.BrushSize * 0.002f;
                 float curve = controller.brushSettings.BrushCurve;
                 
                 AnimationCurve brushCurve = new AnimationCurve(
@@ -41,10 +42,6 @@ public class ArtworkHandler3D : ArtworkHandler
                     new Keyframe(0.5f, 1f), 
                     new Keyframe(1f, curve)    
                 );
-
-                brushCurve.SmoothTangents(0, 0f);
-                brushCurve.SmoothTangents(1, 0f);
-                brushCurve.SmoothTangents(2, 0f);
 
                 currentLine.widthMultiplier = baseWidth;
                 currentLine.widthCurve = brushCurve;
@@ -72,7 +69,7 @@ public class ArtworkHandler3D : ArtworkHandler
                 float distance = Vector3.Distance(currentLine.GetPosition(index), drawingTip.position);
 
                 // Add new point if moved enough
-                if (distance > 0.02f)
+                if (distance > 0.01f)
                 {
                     index++;
                     currentLine.positionCount = index + 1;
@@ -171,22 +168,7 @@ public class ArtworkHandler3D : ArtworkHandler
         LineCollection collection = JsonUtility.FromJson<LineCollection>(json);
 
         ClearArtwork();
-
-        // Reconstruct lines from loaded data
-        foreach (var data in collection.lines)
-        {
-            LineRenderer newLine = Object.Instantiate(controller.linePrefab);
-            newLine.positionCount = data.points.Length;
-            newLine.SetPositions(data.points);
-            newLine.material.color = data.color;
-            newLine.widthMultiplier = data.width;
-            newLine.widthCurve = data.widthCurve;
-
-            lineHistory.Add(newLine);
-            existingPoints.AddRange(data.points);
-        }
-
-        controller.messageLogger.Log("Artwork Loaded: " + Path.GetFileName(controller.savedWhiteboardArtworks[controller.currentArtworkIndex]));
+        controller.StartCoroutine(LoadArtworkWithDelay(collection, 0.02f));
     }
 
     // Clear all 3D lines
@@ -207,5 +189,27 @@ public class ArtworkHandler3D : ArtworkHandler
             Directory.CreateDirectory(folderPath);
 
         return Directory.GetFiles(folderPath, "*.json").OrderBy(f => File.GetCreationTime(f)).ToArray();
+    }
+
+    // Load artwork with delay between lines for visual effect
+    private IEnumerator LoadArtworkWithDelay(LineCollection collection, float delay)
+    {
+        foreach (var data in collection.lines)
+        {
+            LineRenderer newLine = Object.Instantiate(controller.linePrefab);
+            newLine.positionCount = data.points.Length;
+            newLine.SetPositions(data.points);
+            newLine.material.color = data.color;
+            newLine.widthMultiplier = data.width;
+            newLine.widthCurve = data.widthCurve;
+
+            lineHistory.Add(newLine);
+            existingPoints.AddRange(data.points);
+
+            // Pause between line loads
+            yield return new WaitForSeconds(delay);
+        }
+
+        controller.messageLogger.Log("Artwork Loaded: " + Path.GetFileName(controller.savedWhiteboardArtworks[controller.currentArtworkIndex]));
     }
 }
