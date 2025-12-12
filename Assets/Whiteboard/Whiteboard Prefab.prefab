@@ -2577,6 +2577,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tip: {fileID: 230497202562534243}
   brushSettings: {fileID: 8011878002815430114}
+  brushController: {fileID: 8011878002585612124}
   lineRenderer: {fileID: 3720165347765393665}
   minSize: 0.02
   maxSize: 0.05
@@ -10742,6 +10743,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tip: {fileID: 8029506911407467635}
   brushSettings: {fileID: 8011878002815430114}
+  brushController: {fileID: 8011878002585612124}
   lineRenderer: {fileID: 3720165347765393665}
   minSize: 0.02
   maxSize: 0.05
