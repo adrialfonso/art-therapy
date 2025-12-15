@@ -12,6 +12,13 @@ public abstract class ArtworkHandler
 
     public abstract void HandleDrawing();
     public abstract void Undo();
+    
+    public virtual void ToggleEraseMode()
+    {
+        controller.isErasing = !controller.isErasing;
+        controller.messageLogger.Log(controller.isErasing ? "Eraser Mode Activated" : "Brush Mode Activated");
+    }
+
     public abstract void SaveArtwork();
     public abstract void LoadArtwork();
     public abstract void ClearArtwork();

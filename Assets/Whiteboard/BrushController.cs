@@ -35,6 +35,7 @@ public class BrushController : MonoBehaviour
 
     // Drawing Mode & drawing state
     public bool is3DMode = false;
+    public bool isErasing = false;
     public bool isDrawingLeft = false;
     public bool isDrawingRight = false;
 
@@ -43,6 +44,8 @@ public class BrushController : MonoBehaviour
     public string[] savedWhiteboardArtworks; 
     
     // Artwork handler 2D/3D
+    private ArtworkHandler2D handler2DInstance;
+    private ArtworkHandler3D handler3DInstance;
     public Whiteboard whiteboard;
     public ArtworkHandler artworkHandler;
     public MessageLogger messageLogger;
@@ -54,15 +57,7 @@ public class BrushController : MonoBehaviour
 
     private void Start()
     {
-        // Initialize environment
-        audioSettings.PlayRandomAmbientMusic();
-        SelectRandomSkybox();
-        OnSkyExposureChanged(environmentSettings.SkyExposure);
-        OnSkyRotationChanged(environmentSettings.SkyRotation);
-        OnAmbientVolumeChanged(environmentSettings.AmbientVolume);
-
-        Toggle3DMode(is3DMode);
-        messageLogger.Log("Welcome to Art Therapy VR! Start creating your masterpiece.");
+        InitialSetup();
     }
 
     private void Update()
@@ -73,9 +68,7 @@ public class BrushController : MonoBehaviour
     // Toggle between drawing and erasing modes (observer pattern) (delegated to ArtworkHandler2D)
     private void ToggleEraseMode()
     {
-        if (artworkHandler is ArtworkHandler2D handler2D)
-            handler2D.ToggleEraseMode();
-
+        artworkHandler.ToggleEraseMode();
         audioSettings.PlaySoundEffect("snap");
     }
 
@@ -87,13 +80,13 @@ public class BrushController : MonoBehaviour
         // Hide/Show whiteboard based on mode
         if (is3DMode)
         {
-            artworkHandler = new ArtworkHandler3D(this);
+            artworkHandler = handler3DInstance;
             messageLogger.Log("3D Brush mode");
             whiteboard.gameObject.SetActive(false);
         }
         else
         {
-            artworkHandler = new ArtworkHandler2D(this);
+            artworkHandler = handler2DInstance;
             messageLogger.Log("2D Whiteboard mode");
             whiteboard.gameObject.SetActive(true);
         }
@@ -251,5 +244,22 @@ public class BrushController : MonoBehaviour
             environmentSettings.OnSkyRotationChanged += OnSkyRotationChanged;
             environmentSettings.OnAmbientVolumeChanged += OnAmbientVolumeChanged;
         }
+    }
+
+    // Initialize environment
+    private void InitialSetup()
+    {
+        audioSettings.PlayRandomAmbientMusic();
+        SelectRandomSkybox();
+        OnSkyExposureChanged(environmentSettings.SkyExposure);
+        OnSkyRotationChanged(environmentSettings.SkyRotation);
+        OnAmbientVolumeChanged(environmentSettings.AmbientVolume);
+
+        handler2DInstance = new ArtworkHandler2D(this);
+        handler3DInstance = new ArtworkHandler3D(this);
+
+        handler3DInstance.LoadArtwork();
+        Toggle3DMode(is3DMode);
+        messageLogger.Log("Welcome to Art Therapy VR! Start creating your masterpiece.");
     }
 }

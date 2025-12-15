@@ -11,7 +11,7 @@ public class ArtworkHandler3D : ArtworkHandler
     private List<Vector3> existingPoints = new List<Vector3>();
     private List<LineRenderer> lineHistory = new List<LineRenderer>();
     private int index;
-    private float snapRadius = 0.015f;
+    private float snapRadius = 0.0125f;
 
     public ArtworkHandler3D(BrushController controller) : base(controller) { }
 
@@ -22,6 +22,12 @@ public class ArtworkHandler3D : ArtworkHandler
         if (isDrawing)
         {
             Transform drawingTip = controller.isDrawingLeft ? controller.leftTipTransform : controller.rightTipTransform;
+
+            if (controller.isErasing)
+            {
+                EraseLines(drawingTip.position);
+                return;
+            }
 
             if (currentLine == null)
             {
@@ -66,7 +72,7 @@ public class ArtworkHandler3D : ArtworkHandler
                 float distance = Vector3.Distance(currentLine.GetPosition(index), drawingTip.position);
 
                 // Add new point if moved enough
-                if (distance > 0.01f)
+                if (distance > 0.015f)
                 {
                     index++;
                     currentLine.positionCount = index + 1;
@@ -208,5 +214,29 @@ public class ArtworkHandler3D : ArtworkHandler
         }
 
         controller.messageLogger.Log("Artwork Loaded: " + Path.GetFileName(controller.savedWhiteboardArtworks[controller.currentArtworkIndex]));
+    }
+
+    // Erase lines near the given position
+    public void EraseLines(Vector3 erasePosition)
+    {
+        List<LineRenderer> linesToRemove = new List<LineRenderer>();
+
+        foreach (var line in lineHistory)
+        {
+            for (int i = 0; i < line.positionCount; i++)
+            {
+                if (Vector3.Distance(line.GetPosition(i), erasePosition) <= snapRadius)
+                {
+                    linesToRemove.Add(line);
+                    break;
+                }
+            }
+        }
+
+        foreach (var line in linesToRemove)
+        {
+            lineHistory.Remove(line);
+            Object.Destroy(line.gameObject);
+        }
     }
 }

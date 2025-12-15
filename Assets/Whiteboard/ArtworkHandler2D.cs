@@ -13,7 +13,6 @@ public class ArtworkHandler2D : ArtworkHandler
     private Color[] brushColors;
     private List<IMarkerStrategy> strategies;
     private IMarkerStrategy currentStrategy;
-    private bool isErasing = false;
 
     public ArtworkHandler2D(BrushController controller) : base(controller)
     {
@@ -79,7 +78,7 @@ public class ArtworkHandler2D : ArtworkHandler
             // Draw using the current drawing strategy
             if (touchedLastFrame)
             {
-                currentStrategy.Draw(controller.whiteboard, touchPos, lastTouchPos, controller.brushSettings.BrushSize, brushColors, isErasing);
+                currentStrategy.Draw(controller.whiteboard, touchPos, lastTouchPos, controller.brushSettings.BrushSize, brushColors, controller.isErasing);
             }
 
             lastTouchPos = touchPos;
@@ -158,12 +157,6 @@ public class ArtworkHandler2D : ArtworkHandler
             Directory.CreateDirectory(folderPath);
 
         return Directory.GetFiles(folderPath, "*.png").OrderBy(f => File.GetCreationTime(f)).ToArray();
-    }
-
-    public void ToggleEraseMode()
-    {
-        isErasing = !isErasing;
-        controller.messageLogger.Log(isErasing ? "Eraser Mode Activated" : "Drawing Mode Activated");
     }
 
     public void OnBrushSizeChanged(int size)

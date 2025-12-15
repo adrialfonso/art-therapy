@@ -6,7 +6,7 @@ using System.Collections.Generic;
 public class MessageLogger : MonoBehaviour
 {
     public TMP_Text logText;
-    public float displayTime = 2f;
+    public float displayTime = 3f;
     public float fadeDuration = 0.5f;
 
     private Coroutine currentCoroutine;
