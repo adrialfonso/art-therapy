@@ -7385,6 +7385,7 @@ GameObject:
   - component: {fileID: 6580745994460637955}
   - component: {fileID: 1835655620658997860}
   - component: {fileID: 7551421098036496851}
+  - component: {fileID: 6700957424700169137}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -7499,6 +7500,19 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RaycastTriggerInteraction: 1
+--- !u!65 &6700957424700169137
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5830735149240285848}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 75, y: 65, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &5844013495815130010
 GameObject:
   m_ObjectHideFlags: 0
@@ -9517,6 +9531,7 @@ GameObject:
   - component: {fileID: 2549757828577870203}
   - component: {fileID: 2508657573406285480}
   - component: {fileID: 3627080246754560364}
+  - component: {fileID: 6760387832633984516}
   m_Layer: 5
   m_Name: Canvas (3D)
   m_TagString: Untagged
@@ -9637,6 +9652,19 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RaycastTriggerInteraction: 1
+--- !u!65 &6760387832633984516
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7097020377866398164}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 75, y: 75, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &7147155406877458494
 GameObject:
   m_ObjectHideFlags: 0
@@ -15427,6 +15455,7 @@ GameObject:
   - component: {fileID: 8011878003508722542}
   - component: {fileID: 8011878003508722541}
   - component: {fileID: 8011878003508722540}
+  - component: {fileID: 3144476912264357952}
   m_Layer: 5
   m_Name: Canvas (2D)
   m_TagString: Untagged
@@ -15549,6 +15578,19 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RaycastTriggerInteraction: 1
+--- !u!65 &3144476912264357952
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8011878003508722539}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 75, y: 95, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &8011878003616662138
 GameObject:
   m_ObjectHideFlags: 0
@@ -15720,6 +15762,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8011878003682966516}
+  - component: {fileID: 253927016181915668}
   m_Layer: 0
   m_Name: Whiteboard Prefab
   m_TagString: Untagged
@@ -15752,6 +15795,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &253927016181915668
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8011878003682966515}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &8011878003700418156
 GameObject:
   m_ObjectHideFlags: 0

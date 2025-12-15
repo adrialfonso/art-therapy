@@ -22,6 +22,17 @@ public class ArtworkHandler2D : ArtworkHandler
         OnBrushColorChanged(controller.brushSettings.BrushColor);
     }
 
+    // Check if the first hit of the ray interactor is on UI
+    private bool FirstHitIsUI(XRRayInteractor rayInteractor)
+    {
+        if (rayInteractor.TryGetCurrent3DRaycastHit(out RaycastHit hit))
+        {
+            return hit.collider.gameObject.layer == LayerMask.NameToLayer("UI");
+        }
+
+        return false;
+    }
+
     public override void HandleDrawing()
     {
         bool isDrawing = controller.isDrawingLeft || controller.isDrawingRight;
@@ -36,6 +47,13 @@ public class ArtworkHandler2D : ArtworkHandler
 
         // Determine active ray interactor
         XRRayInteractor activeRay = controller.isDrawingLeft ? controller.leftRay : controller.rightRay;
+
+        if (FirstHitIsUI(activeRay))
+        {
+            touchedLastFrame = false;
+            savedUndoState = false;
+            return;
+        }
 
         // Perform raycast and handle drawing
         if (activeRay.TryGetCurrent3DRaycastHit(out RaycastHit hit))
