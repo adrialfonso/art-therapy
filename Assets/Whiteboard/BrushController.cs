@@ -1,9 +1,5 @@
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
-using System.IO;
 
 // Controller for brush interactions and settings
 public class BrushController : MonoBehaviour

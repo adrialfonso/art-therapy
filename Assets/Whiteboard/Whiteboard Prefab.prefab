@@ -323,7 +323,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 20, y: 1}
+  m_SizeDelta: {x: 15, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8763607313098064696
 CanvasRenderer:
@@ -7385,7 +7385,6 @@ GameObject:
   - component: {fileID: 6580745994460637955}
   - component: {fileID: 1835655620658997860}
   - component: {fileID: 7551421098036496851}
-  - component: {fileID: 1445628061751372031}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -7500,47 +7499,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RaycastTriggerInteraction: 1
---- !u!114 &1445628061751372031
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5830735149240285848}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f0e4645f0392d3458b79d5845f0fa11, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  canvas2D: {fileID: 0}
-  canvas3D: {fileID: 0}
-  rightHandController: {fileID: 0}
-  leftHandController: {fileID: 0}
-  ShowMenuLeftAction:
-    m_UseReference: 1
-    m_Action:
-      m_Name: Show Menu Left
-      m_Type: 0
-      m_ExpectedControlType: 
-      m_Id: 3f11de3d-3b5e-4f6c-a643-5630d1144af7
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings: []
-      m_Flags: 0
-    m_Reference: {fileID: -6131295136447488360, guid: c348712bda248c246b8c49b3db54643f, type: 3}
-  ShowMenuRightAction:
-    m_UseReference: 1
-    m_Action:
-      m_Name: Show Menu Right
-      m_Type: 0
-      m_ExpectedControlType: 
-      m_Id: b5ea4dd7-f7d1-4efb-abd1-9ec2451f49ae
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings: []
-      m_Flags: 0
-    m_Reference: {fileID: 187161793506945269, guid: c348712bda248c246b8c49b3db54643f, type: 3}
-  brushController: {fileID: 0}
 --- !u!1 &5844013495815130010
 GameObject:
   m_ObjectHideFlags: 0
@@ -9559,7 +9517,6 @@ GameObject:
   - component: {fileID: 2549757828577870203}
   - component: {fileID: 2508657573406285480}
   - component: {fileID: 3627080246754560364}
-  - component: {fileID: 5261436913012816809}
   m_Layer: 5
   m_Name: Canvas (3D)
   m_TagString: Untagged
@@ -9680,47 +9637,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RaycastTriggerInteraction: 1
---- !u!114 &5261436913012816809
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7097020377866398164}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f0e4645f0392d3458b79d5845f0fa11, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  canvas2D: {fileID: 0}
-  canvas3D: {fileID: 0}
-  rightHandController: {fileID: 0}
-  leftHandController: {fileID: 0}
-  ShowMenuLeftAction:
-    m_UseReference: 1
-    m_Action:
-      m_Name: Show Menu Left
-      m_Type: 0
-      m_ExpectedControlType: 
-      m_Id: 3f11de3d-3b5e-4f6c-a643-5630d1144af7
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings: []
-      m_Flags: 0
-    m_Reference: {fileID: -6131295136447488360, guid: c348712bda248c246b8c49b3db54643f, type: 3}
-  ShowMenuRightAction:
-    m_UseReference: 1
-    m_Action:
-      m_Name: Show Menu Right
-      m_Type: 0
-      m_ExpectedControlType: 
-      m_Id: b5ea4dd7-f7d1-4efb-abd1-9ec2451f49ae
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings: []
-      m_Flags: 0
-    m_Reference: {fileID: 187161793506945269, guid: c348712bda248c246b8c49b3db54643f, type: 3}
-  brushController: {fileID: 0}
 --- !u!1 &7147155406877458494
 GameObject:
   m_ObjectHideFlags: 0
@@ -15511,7 +15427,6 @@ GameObject:
   - component: {fileID: 8011878003508722542}
   - component: {fileID: 8011878003508722541}
   - component: {fileID: 8011878003508722540}
-  - component: {fileID: 8011878003508722529}
   m_Layer: 5
   m_Name: Canvas (2D)
   m_TagString: Untagged
@@ -15634,47 +15549,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RaycastTriggerInteraction: 1
---- !u!114 &8011878003508722529
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8011878003508722539}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2f0e4645f0392d3458b79d5845f0fa11, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  canvas2D: {fileID: 0}
-  canvas3D: {fileID: 0}
-  rightHandController: {fileID: 0}
-  leftHandController: {fileID: 0}
-  ShowMenuLeftAction:
-    m_UseReference: 1
-    m_Action:
-      m_Name: Show Menu Left
-      m_Type: 0
-      m_ExpectedControlType: 
-      m_Id: 3f11de3d-3b5e-4f6c-a643-5630d1144af7
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings: []
-      m_Flags: 0
-    m_Reference: {fileID: -6131295136447488360, guid: c348712bda248c246b8c49b3db54643f, type: 3}
-  ShowMenuRightAction:
-    m_UseReference: 1
-    m_Action:
-      m_Name: Show Menu Right
-      m_Type: 0
-      m_ExpectedControlType: 
-      m_Id: b5ea4dd7-f7d1-4efb-abd1-9ec2451f49ae
-      m_Processors: 
-      m_Interactions: 
-      m_SingletonActionBindings: []
-      m_Flags: 0
-    m_Reference: {fileID: 187161793506945269, guid: c348712bda248c246b8c49b3db54643f, type: 3}
-  brushController: {fileID: 0}
 --- !u!1 &8011878003616662138
 GameObject:
   m_ObjectHideFlags: 0

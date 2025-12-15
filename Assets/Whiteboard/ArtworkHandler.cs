@@ -1,9 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine.SceneManagement;
 using System.IO;
 
 // Abstract class to handle artwork operations
