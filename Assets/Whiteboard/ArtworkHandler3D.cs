@@ -95,6 +95,13 @@ public class ArtworkHandler3D : ArtworkHandler
                         break;
                     }
                 }
+
+                // Remove errorneous lines
+                if (currentLine.positionCount < 2)
+                {
+                    lineHistory.Remove(currentLine);
+                    Object.Destroy(currentLine.gameObject);
+                }
             }
 
             currentLine = null;
