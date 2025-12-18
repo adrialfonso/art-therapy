@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -61,6 +60,13 @@ public class Whiteboard : MonoBehaviour
     public void SetTexture(Texture2D newTexture)
     {
         texture.SetPixels(newTexture.GetPixels());
+        texture.Apply();
+    }
+
+    // Clear the whiteboard to its original state
+    public void ClearTexture()
+    {
+        texture.SetPixels(originalTexture.GetPixels());
         texture.Apply();
     }
 }

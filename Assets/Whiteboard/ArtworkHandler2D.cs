@@ -1,28 +1,35 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine.SceneManagement;
 using System.IO;
 
 // Implementation for 2D whiteboard drawing
 public class ArtworkHandler2D : ArtworkHandler
 {
-    private Whiteboard whiteboard;
     private bool touchedLastFrame = false;
     private bool savedUndoState = false;
     private Vector2 lastTouchPos;
     private Color[] brushColors;
-    private List<IMarkerStrategy> strategies;
-    private IMarkerStrategy currentStrategy;
-    private bool isErasing = false;
+    private List<IBrushStrategy> strategies;
+    private IBrushStrategy currentStrategy;
 
     public ArtworkHandler2D(BrushController controller) : base(controller)
     {
-        InitializeMarkerStrategies();
+        InitializeBrushStrategies();
         OnBrushSizeChanged(controller.brushSettings.BrushSize);
         OnBrushColorChanged(controller.brushSettings.BrushColor);
+    }
+
+    // Check if the first hit of the ray interactor is on UI
+    private bool FirstHitIsUI(XRRayInteractor rayInteractor)
+    {
+        if (rayInteractor.TryGetCurrent3DRaycastHit(out RaycastHit hit))
+        {
+            return hit.collider.gameObject.layer == LayerMask.NameToLayer("UI");
+        }
+
+        return false;
     }
 
     public override void HandleDrawing()
@@ -40,32 +47,38 @@ public class ArtworkHandler2D : ArtworkHandler
         // Determine active ray interactor
         XRRayInteractor activeRay = controller.isDrawingLeft ? controller.leftRay : controller.rightRay;
 
+        if (FirstHitIsUI(activeRay))
+        {
+            touchedLastFrame = false;
+            savedUndoState = false;
+            return;
+        }
+
         // Perform raycast and handle drawing
         if (activeRay.TryGetCurrent3DRaycastHit(out RaycastHit hit))
         {
             if (!hit.transform.CompareTag("Whiteboard")) return;
 
-            // Get or update whiteboard reference
             Whiteboard hitBoard = hit.transform.GetComponent<Whiteboard>();
-            if (hitBoard != whiteboard)
+            if (hitBoard != controller.whiteboard)
             {
-                whiteboard = hitBoard;
+                controller.whiteboard = hitBoard;
                 savedUndoState = false;
             }
 
-            Vector2 touchPos = new Vector2(hit.textureCoord.x * whiteboard.textureSize.x, hit.textureCoord.y * whiteboard.textureSize.y);
-
+            Vector2 touchPos = new Vector2(hit.textureCoord.x * controller.whiteboard.textureSize.x, hit.textureCoord.y * controller.whiteboard.textureSize.y);
+            
             // Save undo state if not already saved
             if (!savedUndoState)
             {
-                whiteboard.SaveUndoState();
+                controller.whiteboard.SaveUndoState();
                 savedUndoState = true;
             }
 
             // Draw using the current drawing strategy
             if (touchedLastFrame)
             {
-                currentStrategy.Draw(whiteboard, touchPos, lastTouchPos, controller.brushSettings.BrushSize, brushColors, isErasing);
+                currentStrategy.Draw(controller.whiteboard, touchPos, lastTouchPos, controller.brushSettings.BrushSize, brushColors, controller.isErasing);
             }
 
             lastTouchPos = touchPos;
@@ -79,49 +92,45 @@ public class ArtworkHandler2D : ArtworkHandler
 
     public override void Undo()
     {
-        if (whiteboard != null)
-            whiteboard.Undo();
+        if (controller.whiteboard != null)
+            controller.whiteboard.Undo();
     }
 
     // Save current artwork to persistent data path (2D)
     public override void SaveArtwork()
     {
-        Texture2D texture = whiteboard.GetTexture();
+        Texture2D texture = controller.whiteboard.GetTexture();
         byte[] bytes = texture.EncodeToPNG();
         string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
 
         if (!Directory.Exists(folderPath))
             Directory.CreateDirectory(folderPath);
 
+        string[] files = GetArtworks();
         string fileName;
-        bool isOverwrite = controller.currentArtworkIndex >= 0 && controller.savedWhiteboardArtworks != null && controller.currentArtworkIndex < controller.savedWhiteboardArtworks.Length;
+        bool isOverwrite = controller.currentArtworkIndex >= 0 && files.Length > 0 && controller.currentArtworkIndex < files.Length;
 
-        // If already loaded, overwrite the file
         if (isOverwrite)
-        {
-            fileName = Path.GetFileName(controller.savedWhiteboardArtworks[controller.currentArtworkIndex]);
-        }
+            fileName = Path.GetFileName(files[controller.currentArtworkIndex]);
         else
-        {
-            fileName = $"Artwork_{System.DateTime.Now:yyyyMMdd_HHmmss}.png";
-        }
+            fileName = $"artwork2D_{System.DateTime.Now:yyyyMMdd_HHmmss}.png";
 
         File.WriteAllBytes(Path.Combine(folderPath, fileName), bytes);
 
-        // Update the list of artworks
-        controller.savedWhiteboardArtworks = Directory.GetFiles(folderPath, "*.png");
+        // Refresh the saved artwork list
+        controller.savedWhiteboardArtworks = GetArtworks();
 
-        // If it's a new file, update the index to the end
+        // Update current index if new artwork
         if (!isOverwrite)
             controller.currentArtworkIndex = controller.savedWhiteboardArtworks.Length - 1;
+
+        controller.messageLogger.Log("Artwork Saved: " + fileName);
     }
 
     // Load artwork from persistent data path (2D)
     public override void LoadArtwork()
     {
-        string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
-
-        controller.savedWhiteboardArtworks = Directory.GetFiles(folderPath, "*.png").OrderBy(f => File.GetCreationTime(f)).ToArray();
+        controller.savedWhiteboardArtworks = GetArtworks();
         if (controller.savedWhiteboardArtworks.Length == 0) return;
 
         controller.currentArtworkIndex = (controller.currentArtworkIndex + 1) % controller.savedWhiteboardArtworks.Length;
@@ -130,12 +139,24 @@ public class ArtworkHandler2D : ArtworkHandler
         Texture2D loadedTexture = new Texture2D(2, 2);
         loadedTexture.LoadImage(fileData);
 
-        whiteboard.SetTexture(loadedTexture);
+        controller.whiteboard.SetTexture(loadedTexture);
+        controller.messageLogger.Log("Artwork Loaded: " + Path.GetFileName(controller.savedWhiteboardArtworks[controller.currentArtworkIndex]));
     }
 
-    public void ToggleEraseMode()
+    // Clear the whiteboard texture (2D)
+    public override void ClearArtwork()
     {
-        isErasing = !isErasing;
+        controller.whiteboard.ClearTexture();
+    }
+
+    // Refresh the list of saved artworks (2D)
+    public override string[] GetArtworks()
+    {
+        string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "2D");
+        if (!Directory.Exists(folderPath))
+            Directory.CreateDirectory(folderPath);
+
+        return Directory.GetFiles(folderPath, "*.png").OrderBy(f => File.GetCreationTime(f)).ToArray();
     }
 
     public void OnBrushSizeChanged(int size)
@@ -154,14 +175,14 @@ public class ArtworkHandler2D : ArtworkHandler
             currentStrategy = strategies[index];
     }
 
-    // Initialize available marker strategies
-    private void InitializeMarkerStrategies()
+    // Initialize available brush strategies
+    private void InitializeBrushStrategies()
     {
-        strategies = new List<IMarkerStrategy>
+        strategies = new List<IBrushStrategy>
         {
-            new NormalMarkerStrategy(),
-            new GraffitiMarkerStrategy(),
-            new WatercolorMarkerStrategy()
+            new NormalBrushStrategy(),
+            new GraffitiBrushStrategy(),
+            new WatercolorBrushStrategy()
         };
 
         currentStrategy = strategies[controller.brushSettings.StrategyIndex];

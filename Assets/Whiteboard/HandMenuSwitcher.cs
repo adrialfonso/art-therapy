@@ -4,8 +4,9 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class HandMenuSwitcher : MonoBehaviour
 {
-    [Header("Canvas to move")]
-    public GameObject canvasObject;
+    [Header("Canvases to move")]
+    public GameObject canvas2D;
+    public GameObject canvas3D;
 
     [Header("XR Controllers")]
     public ActionBasedController rightHandController;
@@ -15,11 +16,14 @@ public class HandMenuSwitcher : MonoBehaviour
     public InputActionProperty ShowMenuLeftAction;
     public InputActionProperty ShowMenuRightAction;
 
+    [Header("Brush Controller Reference")]
+    public BrushController brushController;
+
     private XRRayInteractor rightRay;
     private XRRayInteractor leftRay;
 
     // State tracking
-    private Transform currentHand = null; 
+    private Transform currentHand = null;
     private Vector3 originalPosition;
     private Quaternion originalRotation;
     private int sameHandClickCount = 0;
@@ -30,14 +34,22 @@ public class HandMenuSwitcher : MonoBehaviour
         leftRay = leftHandController.GetComponent<XRRayInteractor>();
 
         // Keep original position for resetting
-        originalPosition = canvasObject.transform.position;
-        originalRotation = canvasObject.transform.rotation;
+        originalPosition = GetActiveCanvas().transform.position;
+        originalRotation = GetActiveCanvas().transform.rotation;
 
         if (ShowMenuLeftAction.action != null)
             ShowMenuLeftAction.action.performed += _ => ToggleLeft();
 
         if (ShowMenuRightAction.action != null)
             ShowMenuRightAction.action.performed += _ => ToggleRight();
+    }
+
+    private GameObject GetActiveCanvas()
+    {
+        if (brushController.is3DMode)
+            return canvas3D;
+        else
+            return canvas2D;
     }
 
     private void ToggleRight()
@@ -52,6 +64,8 @@ public class HandMenuSwitcher : MonoBehaviour
 
     private void ToggleHand(Transform targetHand, XRRayInteractor targetRay, XRRayInteractor otherRay)
     {
+        GameObject canvasObject = GetActiveCanvas();
+
         if (currentHand == targetHand)
         {
             sameHandClickCount++;
@@ -104,6 +118,6 @@ public class HandMenuSwitcher : MonoBehaviour
         obj.transform.SetParent(parentTransform);
         obj.transform.localPosition = Vector3.zero;
         obj.transform.localRotation = Quaternion.Euler(-30, 180, 0);
-        obj.transform.localScale = new Vector3(0.003f, 0.003f, 0.003f);
+        obj.transform.localScale = new Vector3(0.0035f, 0.0035f, 0.0035f);
     }
 }

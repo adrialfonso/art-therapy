@@ -1,9 +1,5 @@
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit;
-using System.IO;
 
 // Controller for brush interactions and settings
 public class BrushController : MonoBehaviour
@@ -22,12 +18,15 @@ public class BrushController : MonoBehaviour
     [Header("Environment Settings Observer")]
     [SerializeField] public EnvironmentSettingsObserver environmentSettings;
 
+    [Header("Audio Manager")]
+    [SerializeField] private AudioSettings audioSettings;
+
     [Header("Skybox Options")]
     [SerializeField] public Material[] skyboxOptions;
 
-    [Header("Ambient Music Options")]
-    [SerializeField] public AudioClip[] ambientMusicOptions;
-    [SerializeField] public AudioSource ambientSource;
+    [Header("UI Canvases")]
+    [SerializeField] private GameObject canvas2DUI;
+    [SerializeField] private GameObject canvas3DUI;
     
     [Header("3D Mode")]
     [SerializeField] public Transform rightTipTransform;   
@@ -36,6 +35,7 @@ public class BrushController : MonoBehaviour
 
     // Drawing Mode & drawing state
     public bool is3DMode = false;
+    public bool isErasing = false;
     public bool isDrawingLeft = false;
     public bool isDrawingRight = false;
 
@@ -44,7 +44,11 @@ public class BrushController : MonoBehaviour
     public string[] savedWhiteboardArtworks; 
     
     // Artwork handler 2D/3D
+    private ArtworkHandler2D handler2DInstance;
+    private ArtworkHandler3D handler3DInstance;
+    public Whiteboard whiteboard;
     public ArtworkHandler artworkHandler;
+    public MessageLogger messageLogger;
 
     private void OnEnable()
     {   
@@ -53,14 +57,7 @@ public class BrushController : MonoBehaviour
 
     private void Start()
     {
-        // Initialize environment
-        SelectRandomSkybox();
-        SelectRandomAmbientMusic();
-        OnSkyExposureChanged(environmentSettings.SkyExposure);
-        OnSkyRotationChanged(environmentSettings.SkyRotation);
-        OnAmbientVolumeChanged(environmentSettings.AmbientVolume);
-
-        artworkHandler = is3DMode ? (ArtworkHandler)new ArtworkHandler3D(this) : new ArtworkHandler2D(this);
+        InitialSetup();
     }
 
     private void Update()
@@ -71,21 +68,38 @@ public class BrushController : MonoBehaviour
     // Toggle between drawing and erasing modes (observer pattern) (delegated to ArtworkHandler2D)
     private void ToggleEraseMode()
     {
-        if (artworkHandler is ArtworkHandler2D handler2D)
-            handler2D.ToggleEraseMode();
+        artworkHandler.ToggleEraseMode();
+        audioSettings.PlaySoundEffect("snap");
     }
 
     // Toggle between 2D and 3D drawing modes (observer pattern) 
     private void Toggle3DMode(bool active)
     {
         is3DMode = active;
-        artworkHandler = is3DMode ? (ArtworkHandler)new ArtworkHandler3D(this) : new ArtworkHandler2D(this);
+
+        // Hide/Show whiteboard based on mode
+        if (is3DMode)
+        {
+            artworkHandler = handler3DInstance;
+            messageLogger.Log("3D Brush mode");
+            whiteboard.gameObject.SetActive(false);
+        }
+        else
+        {
+            artworkHandler = handler2DInstance;
+            messageLogger.Log("2D Whiteboard mode");
+            whiteboard.gameObject.SetActive(true);
+        }
+
+        canvas2DUI.SetActive(!is3DMode);
+        canvas3DUI.SetActive(is3DMode);
     }
 
     // Perform undo (observer pattern)
     private void Undo()
     {
         artworkHandler.Undo();
+        audioSettings.PlaySoundEffect("snap");
     }
 
     // Save current artwork to persistent data path (observer pattern)
@@ -98,6 +112,18 @@ public class BrushController : MonoBehaviour
     private void LoadArtwork()
     {
         artworkHandler.LoadArtwork();
+    }
+
+    // Create new artwork (observer pattern)
+    private void NewArtwork()
+    {
+        artworkHandler.NewArtwork();
+    }
+
+    // Delete current artwork (observer pattern)
+    private void DeleteArtwork()
+    {
+        artworkHandler.DeleteArtwork();
     }
 
     // Listener for brush size changes (observer pattern) (delegated to ArtworkHandler2D)
@@ -119,6 +145,28 @@ public class BrushController : MonoBehaviour
     {
         if (artworkHandler is ArtworkHandler2D handler2D)
             handler2D.OnStrategyChanged(index);
+    }
+
+    // Listener for whiteboard width changes (observer pattern)
+    private void OnWhiteboardWidthChanged(float width)
+    {
+        if (whiteboard != null)
+        {
+            Vector3 scale = whiteboard.transform.localScale;
+            scale.x = width;
+            whiteboard.transform.localScale = scale;
+        }
+    }
+
+    // Listener for whiteboard height changes (observer pattern)
+    private void OnWhiteboardHeightChanged(float height)
+    {
+        if (whiteboard != null)
+        {
+            Vector3 scale = whiteboard.transform.localScale;
+            scale.z = height;
+            whiteboard.transform.localScale = scale;
+        }
     }
 
     // Listener for changes in the sky exposure of the environment (observer pattern)
@@ -144,8 +192,7 @@ public class BrushController : MonoBehaviour
     // Listener for changes in ambient volume of the environment (observer pattern)
     private void OnAmbientVolumeChanged(float volume)
     {
-        if (ambientSource != null)
-            ambientSource.volume = volume;
+        audioSettings.SetAmbientVolume(volume);
     }
 
     // Select random skybox (button triggered)
@@ -155,24 +202,6 @@ public class BrushController : MonoBehaviour
         int index = Random.Range(0, skyboxOptions.Length);
         RenderSettings.skybox = skyboxOptions[index];
         DynamicGI.UpdateEnvironment();
-    }
-
-    // Select random ambient music (button triggered)
-    public void SelectRandomAmbientMusic()
-    {
-        if (ambientMusicOptions == null || ambientMusicOptions.Length == 0) return;
-
-        if (ambientSource == null)
-            ambientSource = gameObject.AddComponent<AudioSource>();
-
-        int index = Random.Range(0, ambientMusicOptions.Length);
-
-        ambientSource.clip = ambientMusicOptions[index];
-        ambientSource.loop = true;
-        ambientSource.volume = 0.1f;
-        ambientSource.playOnAwake = false;
-        ambientSource.spatialBlend = 0f;
-        ambientSource.Play();
     }
 
     // Initialize subscriptions to observer events
@@ -187,6 +216,10 @@ public class BrushController : MonoBehaviour
             brushSettings.On3DModeChanged += Toggle3DMode;
             brushSettings.OnSaveArtwork += SaveArtwork;
             brushSettings.OnLoadArtwork += LoadArtwork;
+            brushSettings.OnNewArtwork += NewArtwork;
+            brushSettings.OnDeleteArtwork += DeleteArtwork;
+            brushSettings.OnWhiteboardWidthChanged += OnWhiteboardWidthChanged;
+            brushSettings.OnWhiteboardHeightChanged += OnWhiteboardHeightChanged;
         }
 
         if (leftController != null)
@@ -211,5 +244,22 @@ public class BrushController : MonoBehaviour
             environmentSettings.OnSkyRotationChanged += OnSkyRotationChanged;
             environmentSettings.OnAmbientVolumeChanged += OnAmbientVolumeChanged;
         }
+    }
+
+    // Initialize environment
+    private void InitialSetup()
+    {
+        audioSettings.PlayRandomAmbientMusic();
+        SelectRandomSkybox();
+        OnSkyExposureChanged(environmentSettings.SkyExposure);
+        OnSkyRotationChanged(environmentSettings.SkyRotation);
+        OnAmbientVolumeChanged(environmentSettings.AmbientVolume);
+
+        handler2DInstance = new ArtworkHandler2D(this);
+        handler3DInstance = new ArtworkHandler3D(this);
+
+        handler3DInstance.LoadArtwork();
+        Toggle3DMode(is3DMode);
+        messageLogger.Log("Welcome to Art Therapy VR! Start creating your masterpiece.");
     }
 }

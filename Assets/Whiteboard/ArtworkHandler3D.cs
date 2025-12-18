@@ -1,9 +1,7 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine.SceneManagement;
 using System.IO;
 
 // Implementation for 3D drawing
@@ -13,7 +11,7 @@ public class ArtworkHandler3D : ArtworkHandler
     private List<Vector3> existingPoints = new List<Vector3>();
     private List<LineRenderer> lineHistory = new List<LineRenderer>();
     private int index;
-    private float snapRadius = 0.03f;
+    private float snapRadius = 0.0125f;
 
     public ArtworkHandler3D(BrushController controller) : base(controller) { }
 
@@ -25,6 +23,12 @@ public class ArtworkHandler3D : ArtworkHandler
         {
             Transform drawingTip = controller.isDrawingLeft ? controller.leftTipTransform : controller.rightTipTransform;
 
+            if (controller.isErasing)
+            {
+                EraseLines(drawingTip.position);
+                return;
+            }
+
             if (currentLine == null)
             {
                 index = 0;
@@ -33,11 +37,13 @@ public class ArtworkHandler3D : ArtworkHandler
                 currentLine = Object.Instantiate(controller.linePrefab);
                 currentLine.material.color = controller.brushSettings.BrushColor;
 
-                float baseWidth = controller.brushSettings.BrushSize * 0.0025f;
+                float baseWidth = controller.brushSettings.BrushSize * 0.002f;
+                float curve = controller.brushSettings.BrushCurve;
+                
                 AnimationCurve brushCurve = new AnimationCurve(
-                    new Keyframe(0f, 0.5f),
-                    new Keyframe(0.5f, 1f),
-                    new Keyframe(1f, 0.5f)
+                    new Keyframe(0f, curve),  
+                    new Keyframe(0.5f, 1f), 
+                    new Keyframe(1f, curve)    
                 );
 
                 currentLine.widthMultiplier = baseWidth;
@@ -66,7 +72,7 @@ public class ArtworkHandler3D : ArtworkHandler
                 float distance = Vector3.Distance(currentLine.GetPosition(index), drawingTip.position);
 
                 // Add new point if moved enough
-                if (distance > 0.02f)
+                if (distance > 0.015f)
                 {
                     index++;
                     currentLine.positionCount = index + 1;
@@ -88,6 +94,13 @@ public class ArtworkHandler3D : ArtworkHandler
                         currentLine.SetPosition(index, p);
                         break;
                     }
+                }
+
+                // Remove errorneous lines
+                if (currentLine.positionCount < 2)
+                {
+                    lineHistory.Remove(currentLine);
+                    Object.Destroy(currentLine.gameObject);
                 }
             }
 
@@ -126,45 +139,71 @@ public class ArtworkHandler3D : ArtworkHandler
 
         string json = JsonUtility.ToJson(collection, true);
 
+        // Create directory if it doesn't exist
         string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "3D");
         if (!Directory.Exists(folderPath))
             Directory.CreateDirectory(folderPath);
 
+        string[] files = GetArtworks();
         string fileName;
-        string[] files = Directory.GetFiles(folderPath, "*.json");
-        if (controller.currentArtworkIndex >= 0 && files.Length > 0 && controller.currentArtworkIndex < files.Length)
-        {
+
+        bool isOverwrite = controller.currentArtworkIndex >= 0 && files.Length > 0 && controller.currentArtworkIndex < files.Length;
+
+        if (isOverwrite)
             fileName = Path.GetFileName(files[controller.currentArtworkIndex]);
-        }
         else
-        {
-            fileName = $"Artwork3D_{System.DateTime.Now:yyyyMMdd_HHmmss}.json";
-        }
+            fileName = $"artwork3D_{System.DateTime.Now:yyyyMMdd_HHmmss}.json";
 
         File.WriteAllText(Path.Combine(folderPath, fileName), json);
+
+        // Refresh the saved artwork list
+        controller.savedWhiteboardArtworks = GetArtworks();
+
+        // Update current index if new artwork
+        if (!isOverwrite)
+            controller.currentArtworkIndex = controller.savedWhiteboardArtworks.Length - 1;
+
+        controller.messageLogger.Log("Artwork Saved: " + fileName);
     }
 
     // Load artwork from persistent data path (3D)
     public override void LoadArtwork()
     {
-        string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "3D");
-        string[] files = Directory.GetFiles(folderPath, "*.json");
+        controller.savedWhiteboardArtworks = GetArtworks();
+        if (controller.savedWhiteboardArtworks.Length == 0) return;
 
-        if (files.Length == 0) return;
+        controller.currentArtworkIndex = (controller.currentArtworkIndex + 1) % controller.savedWhiteboardArtworks.Length;
 
-        controller.currentArtworkIndex = (controller.currentArtworkIndex + 1) % files.Length;
-
-        string json = File.ReadAllText(files[controller.currentArtworkIndex]);
+        string json = File.ReadAllText(controller.savedWhiteboardArtworks[controller.currentArtworkIndex]);
         LineCollection collection = JsonUtility.FromJson<LineCollection>(json);
 
-        // Clear current lines
+        ClearArtwork();
+        controller.StartCoroutine(LoadArtworkWithDelay(collection, 0.025f));
+    }
+
+    // Clear all 3D lines
+    public override void ClearArtwork()
+    {
         foreach (var line in lineHistory)
             Object.Destroy(line.gameObject);
 
         lineHistory.Clear();
         existingPoints.Clear();
+    }
 
-        // Reconstruct lines from loaded data
+    // Refresh the list of saved artworks (3D)
+    public override string[] GetArtworks()
+    {
+        string folderPath = Path.Combine(Application.persistentDataPath, "artworks", "3D");
+        if (!Directory.Exists(folderPath))
+            Directory.CreateDirectory(folderPath);
+
+        return Directory.GetFiles(folderPath, "*.json").OrderBy(f => File.GetCreationTime(f)).ToArray();
+    }
+
+    // Load artwork with delay between lines for visual effect
+    private IEnumerator LoadArtworkWithDelay(LineCollection collection, float delay)
+    {
         foreach (var data in collection.lines)
         {
             LineRenderer newLine = Object.Instantiate(controller.linePrefab);
@@ -176,6 +215,35 @@ public class ArtworkHandler3D : ArtworkHandler
 
             lineHistory.Add(newLine);
             existingPoints.AddRange(data.points);
+
+            // Pause between line loads
+            yield return new WaitForSeconds(delay);
+        }
+
+        controller.messageLogger.Log("Artwork Loaded: " + Path.GetFileName(controller.savedWhiteboardArtworks[controller.currentArtworkIndex]));
+    }
+
+    // Erase lines near the given position
+    public void EraseLines(Vector3 erasePosition)
+    {
+        List<LineRenderer> linesToRemove = new List<LineRenderer>();
+
+        foreach (var line in lineHistory)
+        {
+            for (int i = 0; i < line.positionCount; i++)
+            {
+                if (Vector3.Distance(line.GetPosition(i), erasePosition) <= snapRadius)
+                {
+                    linesToRemove.Add(line);
+                    break;
+                }
+            }
+        }
+
+        foreach (var line in linesToRemove)
+        {
+            lineHistory.Remove(line);
+            Object.Destroy(line.gameObject);
         }
     }
 }
