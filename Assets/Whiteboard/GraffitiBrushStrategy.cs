@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class GraffitiMarkerStrategy : BaseMarkerStrategy
+public class GraffitiBrushStrategy : BaseBrushStrategy
 {
     protected override void DrawAtPosition(Whiteboard whiteboard, Vector2 pos, int brushSize, Color[] brushColors, bool isErasing)
     {   

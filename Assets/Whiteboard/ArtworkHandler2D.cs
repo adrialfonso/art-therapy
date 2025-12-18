@@ -11,12 +11,12 @@ public class ArtworkHandler2D : ArtworkHandler
     private bool savedUndoState = false;
     private Vector2 lastTouchPos;
     private Color[] brushColors;
-    private List<IMarkerStrategy> strategies;
-    private IMarkerStrategy currentStrategy;
+    private List<IBrushStrategy> strategies;
+    private IBrushStrategy currentStrategy;
 
     public ArtworkHandler2D(BrushController controller) : base(controller)
     {
-        InitializeMarkerStrategies();
+        InitializeBrushStrategies();
         OnBrushSizeChanged(controller.brushSettings.BrushSize);
         OnBrushColorChanged(controller.brushSettings.BrushColor);
     }
@@ -175,14 +175,14 @@ public class ArtworkHandler2D : ArtworkHandler
             currentStrategy = strategies[index];
     }
 
-    // Initialize available marker strategies
-    private void InitializeMarkerStrategies()
+    // Initialize available brush strategies
+    private void InitializeBrushStrategies()
     {
-        strategies = new List<IMarkerStrategy>
+        strategies = new List<IBrushStrategy>
         {
-            new NormalMarkerStrategy(),
-            new GraffitiMarkerStrategy(),
-            new WatercolorMarkerStrategy()
+            new NormalBrushStrategy(),
+            new GraffitiBrushStrategy(),
+            new WatercolorBrushStrategy()
         };
 
         currentStrategy = strategies[controller.brushSettings.StrategyIndex];

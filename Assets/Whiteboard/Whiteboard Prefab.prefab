@@ -13689,6 +13689,7 @@ MonoBehaviour:
   leftTipTransform: {fileID: 230497202562534243}
   linePrefab: {fileID: 3720165347765393665}
   is3DMode: 0
+  isErasing: 0
   isDrawingLeft: 0
   isDrawingRight: 0
   currentArtworkIndex: -1
@@ -15671,7 +15672,7 @@ MonoBehaviour:
   m_SubmitAction: {fileID: 0}
   m_CancelAction: {fileID: 0}
   m_EnableBuiltinActionsAsFallback: 1
-  m_EnableGamepadInput: 1
+  m_EnableGamepadInput: 0
   m_EnableJoystickInput: 0
   m_HorizontalAxis: Horizontal
   m_VerticalAxis: Vertical

@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public abstract class BaseMarkerStrategy : IMarkerStrategy
+public abstract class BaseBrushStrategy : IBrushStrategy
 {
-    // Overridden method common to all BaseMarkerStrategy implementations
+    // Overridden method common to all BaseBrushStrategy implementations
     public void Draw(Whiteboard whiteboard, Vector2 currentPos, Vector2 lastPos, int brushSize, Color[] brushColors, bool isErasing)
     {
         DrawAtPosition(whiteboard, currentPos, brushSize, brushColors, isErasing);

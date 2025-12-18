@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class WatercolorMarkerStrategy : BaseMarkerStrategy
+public class WatercolorBrushStrategy : BaseBrushStrategy
 {
     protected override void DrawAtPosition(Whiteboard whiteboard, Vector2 pos, int brushSize, Color[] brushColors, bool isErasing)
     {   

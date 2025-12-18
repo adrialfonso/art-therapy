@@ -13,6 +13,7 @@ public abstract class ArtworkHandler
     public abstract void HandleDrawing();
     public abstract void Undo();
     
+    // Toggle between eraser and brush modes
     public virtual void ToggleEraseMode()
     {
         controller.isErasing = !controller.isErasing;

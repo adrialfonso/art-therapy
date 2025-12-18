@@ -178,7 +178,7 @@ public class ArtworkHandler3D : ArtworkHandler
         LineCollection collection = JsonUtility.FromJson<LineCollection>(json);
 
         ClearArtwork();
-        controller.StartCoroutine(LoadArtworkWithDelay(collection, 0.02f));
+        controller.StartCoroutine(LoadArtworkWithDelay(collection, 0.025f));
     }
 
     // Clear all 3D lines
