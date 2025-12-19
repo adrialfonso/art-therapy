@@ -5,14 +5,8 @@ public class BrushTipVisualizer : MonoBehaviour
     [Header("Tip Transform (Empty)")]
     [SerializeField] private Transform tip;
 
-    [Header("Brush Settings Reference")]
-    [SerializeField] private BrushSettingsObserver brushSettings;
-
-    [Header("Brush Controller Reference")]
-    [SerializeField] private BrushController brushController;
-
-    [Header("LineRenderer Reference")]
-    [SerializeField] private LineRenderer lineRenderer;
+    [Header("Brush Context Reference")]
+    [SerializeField] private BrushContext brushContext;
 
     [Header("Sphere Size Settings")]
     [SerializeField] private float minSize = 0.005f;
@@ -24,7 +18,7 @@ public class BrushTipVisualizer : MonoBehaviour
 
     private void Start()
     {
-        previous3DMode = brushController.is3DMode;
+        previous3DMode = brushContext.is3DMode;
         tipSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         tipSphere.transform.SetParent(tip);
         tipSphere.transform.localPosition = Vector3.zero;
@@ -32,7 +26,7 @@ public class BrushTipVisualizer : MonoBehaviour
 
         Destroy(tipSphere.GetComponent<Collider>());
         sphereRenderer = tipSphere.GetComponent<Renderer>();
-        sphereRenderer.material = new Material(lineRenderer.material);
+        sphereRenderer.material = new Material(brushContext.linePrefab.material);
 
         tipSphere.SetActive(previous3DMode);
         UpdateSize();
@@ -41,13 +35,13 @@ public class BrushTipVisualizer : MonoBehaviour
 
     private void Update()
     {
-        if (brushController.is3DMode != previous3DMode)
+        if (brushContext.is3DMode != previous3DMode)
         {
-            tipSphere.SetActive(brushController.is3DMode);
-            previous3DMode = brushController.is3DMode;
+            tipSphere.SetActive(brushContext.is3DMode);
+            previous3DMode = brushContext.is3DMode;
         }
 
-        if (!brushController.is3DMode) return;
+        if (!brushContext.is3DMode) return;
 
         UpdateSize();
         UpdateColor();
@@ -56,13 +50,13 @@ public class BrushTipVisualizer : MonoBehaviour
     private void UpdateSize()
     {
         // Interpolate size based on brush size (1-100)
-        float normalized = Mathf.InverseLerp(1f, 100f, brushSettings.BrushSize);
+        float normalized = Mathf.InverseLerp(1f, 100f, brushContext.brushSettings.BrushSize);
         float size = Mathf.Lerp(minSize, maxSize, normalized);
         tipSphere.transform.localScale = Vector3.one * size;
     }
 
     private void UpdateColor()
     {
-        sphereRenderer.material.color = brushSettings.BrushColor;
+        sphereRenderer.material.color = brushContext.brushSettings.BrushColor;
     }
 }

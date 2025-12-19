@@ -4,51 +4,13 @@ using UnityEngine.XR.Interaction.Toolkit;
 // Controller for brush interactions and settings
 public class BrushController : MonoBehaviour
 {
-    [Header("XR Ray Interactors")]
-    [SerializeField] public XRRayInteractor leftRay;
-    [SerializeField] public XRRayInteractor rightRay;
+    [Header("Context")]
+    [SerializeField] private BrushContext context;
 
-    [Header("Draw Event Observers")]
-    [SerializeField] public DrawEventObserver leftController;
-    [SerializeField] public DrawEventObserver rightController;
-
-    [Header("Brush Settings Observer")]
-    [SerializeField] public BrushSettingsObserver brushSettings;
-    
-    [Header("Environment Settings Observer")]
-    [SerializeField] public EnvironmentSettingsObserver environmentSettings;
-
-    [Header("Audio Manager")]
-    [SerializeField] private AudioSettings audioSettings;
-
-    [Header("Skybox Options")]
-    [SerializeField] public Material[] skyboxOptions;
-
-    [Header("UI Canvases")]
-    [SerializeField] private GameObject canvas2DUI;
-    [SerializeField] private GameObject canvas3DUI;
-    
-    [Header("3D Mode")]
-    [SerializeField] public Transform rightTipTransform;   
-    [SerializeField] public Transform leftTipTransform; 
-    [SerializeField] public LineRenderer linePrefab;
-
-    // Drawing Mode & drawing state
-    public bool is3DMode = false;
-    public bool isErasing = false;
-    public bool isDrawingLeft = false;
-    public bool isDrawingRight = false;
-
-    // Artwork persistence
-    public int currentArtworkIndex = -1; 
-    public string[] savedWhiteboardArtworks; 
-    
     // Artwork handler 2D/3D
     private ArtworkHandler2D handler2DInstance;
     private ArtworkHandler3D handler3DInstance;
-    public Whiteboard whiteboard;
     public ArtworkHandler artworkHandler;
-    public MessageLogger messageLogger;
 
     private void OnEnable()
     {   
@@ -69,37 +31,37 @@ public class BrushController : MonoBehaviour
     private void ToggleEraseMode()
     {
         artworkHandler.ToggleEraseMode();
-        audioSettings.PlaySoundEffect("snap");
+        context.audioSettings.PlaySoundEffect("snap");
     }
 
     // Toggle between 2D and 3D drawing modes (observer pattern) 
     private void Toggle3DMode(bool active)
     {
-        is3DMode = active;
+        context.is3DMode = active;
 
         // Hide/Show whiteboard based on mode
-        if (is3DMode)
+        if (context.is3DMode)
         {
             artworkHandler = handler3DInstance;
-            messageLogger.Log("3D Brush mode");
-            whiteboard.gameObject.SetActive(false);
+            context.messageLogger.Log("3D Brush mode");
+            context.whiteboard.gameObject.SetActive(false);
         }
         else
         {
             artworkHandler = handler2DInstance;
-            messageLogger.Log("2D Whiteboard mode");
-            whiteboard.gameObject.SetActive(true);
+            context.messageLogger.Log("2D Whiteboard mode");
+            context.whiteboard.gameObject.SetActive(true);
         }
 
-        canvas2DUI.SetActive(!is3DMode);
-        canvas3DUI.SetActive(is3DMode);
+        context.canvas2DUI.SetActive(!context.is3DMode);
+        context.canvas3DUI.SetActive(context.is3DMode);
     }
 
     // Perform undo (observer pattern)
     private void Undo()
     {
         artworkHandler.Undo();
-        audioSettings.PlaySoundEffect("snap");
+        context.audioSettings.PlaySoundEffect("snap");
     }
 
     // Save current artwork to persistent data path (observer pattern)
@@ -150,22 +112,22 @@ public class BrushController : MonoBehaviour
     // Listener for whiteboard width changes (observer pattern)
     private void OnWhiteboardWidthChanged(float width)
     {
-        if (whiteboard != null)
+        if (context.whiteboard != null)
         {
-            Vector3 scale = whiteboard.transform.localScale;
+            Vector3 scale = context.whiteboard.transform.localScale;
             scale.x = width;
-            whiteboard.transform.localScale = scale;
+            context.whiteboard.transform.localScale = scale;
         }
     }
 
     // Listener for whiteboard height changes (observer pattern)
     private void OnWhiteboardHeightChanged(float height)
     {
-        if (whiteboard != null)
+        if (context.whiteboard != null)
         {
-            Vector3 scale = whiteboard.transform.localScale;
+            Vector3 scale = context.whiteboard.transform.localScale;
             scale.z = height;
-            whiteboard.transform.localScale = scale;
+            context.whiteboard.transform.localScale = scale;
         }
     }
 
@@ -192,15 +154,15 @@ public class BrushController : MonoBehaviour
     // Listener for changes in ambient volume of the environment (observer pattern)
     private void OnAmbientVolumeChanged(float volume)
     {
-        audioSettings.SetAmbientVolume(volume);
+        context.audioSettings.SetAmbientVolume(volume);
     }
 
     // Select random skybox (button triggered)
     public void SelectRandomSkybox()
     {
-        if (skyboxOptions == null || skyboxOptions.Length == 0) return;
-        int index = Random.Range(0, skyboxOptions.Length);
-        RenderSettings.skybox = skyboxOptions[index];
+        if (context.skyboxOptions == null || context.skyboxOptions.Length == 0) return;
+        int index = Random.Range(0, context.skyboxOptions.Length);
+        RenderSettings.skybox = context.skyboxOptions[index];
         DynamicGI.UpdateEnvironment();
     }
 
@@ -208,58 +170,58 @@ public class BrushController : MonoBehaviour
     private void InitializeObserverSubscriptions()
     {
         // Subscribe to brush settings changes
-        if (brushSettings != null)
+        if (context.brushSettings != null)
         {
-            brushSettings.OnBrushSizeChanged += OnBrushSizeChanged;
-            brushSettings.OnBrushColorChanged += OnBrushColorChanged;
-            brushSettings.OnStrategyChanged += OnStrategyChanged;
-            brushSettings.On3DModeChanged += Toggle3DMode;
-            brushSettings.OnSaveArtwork += SaveArtwork;
-            brushSettings.OnLoadArtwork += LoadArtwork;
-            brushSettings.OnNewArtwork += NewArtwork;
-            brushSettings.OnDeleteArtwork += DeleteArtwork;
-            brushSettings.OnWhiteboardWidthChanged += OnWhiteboardWidthChanged;
-            brushSettings.OnWhiteboardHeightChanged += OnWhiteboardHeightChanged;
+            context.brushSettings.OnBrushSizeChanged += OnBrushSizeChanged;
+            context.brushSettings.OnBrushColorChanged += OnBrushColorChanged;
+            context.brushSettings.OnStrategyChanged += OnStrategyChanged;
+            context.brushSettings.On3DModeChanged += Toggle3DMode;
+            context.brushSettings.OnSaveArtwork += SaveArtwork;
+            context.brushSettings.OnLoadArtwork += LoadArtwork;
+            context.brushSettings.OnNewArtwork += NewArtwork;
+            context.brushSettings.OnDeleteArtwork += DeleteArtwork;
+            context.brushSettings.OnWhiteboardWidthChanged += OnWhiteboardWidthChanged;
+            context.brushSettings.OnWhiteboardHeightChanged += OnWhiteboardHeightChanged;
         }
 
-        if (leftController != null)
+        if (context.leftController != null)
         {
-            leftController.OnDrawPressed += () => isDrawingLeft = true;
-            leftController.OnDrawReleased += () => isDrawingLeft = false;
-            leftController.OnErasePressed += ToggleEraseMode;
-            leftController.OnUndoPressed += Undo;
+            context.leftController.OnDrawPressed += () => context.isDrawingLeft = true;
+            context.leftController.OnDrawReleased += () => context.isDrawingLeft = false;
+            context.leftController.OnErasePressed += ToggleEraseMode;
+            context.leftController.OnUndoPressed += Undo;
         }
 
-        if (rightController != null)
+        if (context.rightController != null)
         {
-            rightController.OnDrawPressed += () => isDrawingRight = true;
-            rightController.OnDrawReleased += () => isDrawingRight = false;
-            rightController.OnErasePressed += ToggleEraseMode;
-            rightController.OnUndoPressed += Undo;
+            context.rightController.OnDrawPressed += () => context.isDrawingRight = true;
+            context.rightController.OnDrawReleased += () => context.isDrawingRight = false;
+            context.rightController.OnErasePressed += ToggleEraseMode;
+            context.rightController.OnUndoPressed += Undo;
         }
 
-        if (environmentSettings != null)
+        if (context.environmentSettings != null)
         {
-            environmentSettings.OnSkyExposureChanged += OnSkyExposureChanged;
-            environmentSettings.OnSkyRotationChanged += OnSkyRotationChanged;
-            environmentSettings.OnAmbientVolumeChanged += OnAmbientVolumeChanged;
+            context.environmentSettings.OnSkyExposureChanged += OnSkyExposureChanged;
+            context.environmentSettings.OnSkyRotationChanged += OnSkyRotationChanged;
+            context.environmentSettings.OnAmbientVolumeChanged += OnAmbientVolumeChanged;
         }
     }
 
     // Initialize environment
     private void InitialSetup()
     {
-        audioSettings.PlayRandomAmbientMusic();
+        context.audioSettings.PlayRandomAmbientMusic();
         SelectRandomSkybox();
-        OnSkyExposureChanged(environmentSettings.SkyExposure);
-        OnSkyRotationChanged(environmentSettings.SkyRotation);
-        OnAmbientVolumeChanged(environmentSettings.AmbientVolume);
+        OnSkyExposureChanged(context.environmentSettings.SkyExposure);
+        OnSkyRotationChanged(context.environmentSettings.SkyRotation);
+        OnAmbientVolumeChanged(context.environmentSettings.AmbientVolume);
 
-        handler2DInstance = new ArtworkHandler2D(this);
-        handler3DInstance = new ArtworkHandler3D(this);
+        handler2DInstance = new ArtworkHandler2D(context);
+        handler3DInstance = new ArtworkHandler3D(context);
 
         handler3DInstance.LoadArtwork();
-        Toggle3DMode(is3DMode);
-        messageLogger.Log("Welcome to Art Therapy VR! Start creating your masterpiece.");
+        Toggle3DMode(context.is3DMode);
+        context.messageLogger.Log("Welcome to Art Therapy VR! Start creating your masterpiece.");
     }
 }
