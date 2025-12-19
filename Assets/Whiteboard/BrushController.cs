@@ -4,7 +4,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 // Controller for brush interactions and settings
 public class BrushController : MonoBehaviour
 {
-    [Header("Context")]
+    [Header("Global Brush Context")]
     [SerializeField] private BrushContext context;
 
     // Artwork handler 2D/3D

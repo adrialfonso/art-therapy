@@ -4262,14 +4262,14 @@ MonoBehaviour:
   rightTipTransform: {fileID: 8029506911407467635}
   leftTipTransform: {fileID: 230497202562534243}
   linePrefab: {fileID: 3720165347765393665}
+  whiteboard: {fileID: 8011878003358091863}
+  messageLogger: {fileID: 3674753057064332127}
   is3DMode: 0
   isErasing: 0
   isDrawingLeft: 0
   isDrawingRight: 0
   currentArtworkIndex: -1
   savedWhiteboardArtworks: []
-  whiteboard: {fileID: 8011878003358091863}
-  messageLogger: {fileID: 3674753057064332127}
 --- !u!1 &3559955574945023711
 GameObject:
   m_ObjectHideFlags: 0
@@ -14199,8 +14199,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f0e4645f0392d3458b79d5845f0fa11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rightHandController: {fileID: 8011878002373816890}
-  leftHandController: {fileID: 8011878003700418146}
   ShowMenuLeftAction:
     m_UseReference: 1
     m_Action:

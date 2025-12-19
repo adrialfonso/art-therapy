@@ -33,6 +33,12 @@ public class BrushContext : MonoBehaviour
     [SerializeField] public Transform leftTipTransform; 
     [SerializeField] public LineRenderer linePrefab;
 
+    [Header("Whiteboard")]
+    public Whiteboard whiteboard;
+
+    [Header("Message Logger")]
+    public MessageLogger messageLogger;
+
     // Drawing Mode & drawing state
     public bool is3DMode = false;
     public bool isErasing = false;
@@ -42,6 +48,4 @@ public class BrushContext : MonoBehaviour
     // Artwork persistence
     public int currentArtworkIndex = -1; 
     public string[] savedWhiteboardArtworks; 
-    public Whiteboard whiteboard;
-    public MessageLogger messageLogger;
 }

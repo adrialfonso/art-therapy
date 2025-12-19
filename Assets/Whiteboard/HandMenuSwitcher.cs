@@ -4,10 +4,6 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class HandMenuSwitcher : MonoBehaviour
 {
-    [Header("XR Controllers")]
-    public ActionBasedController rightHandController;
-    public ActionBasedController leftHandController;
-
     [Header("Input Actions")]
     public InputActionProperty ShowMenuLeftAction;
     public InputActionProperty ShowMenuRightAction;
@@ -44,12 +40,12 @@ public class HandMenuSwitcher : MonoBehaviour
 
     private void ToggleRight()
     {
-        ToggleHand(rightHandController.transform, context.rightRay, context.leftRay);
+        ToggleHand(context.rightRay.transform, context.rightRay, context.leftRay);
     }
 
     private void ToggleLeft()
     {
-        ToggleHand(leftHandController.transform, context.leftRay, context.rightRay);
+        ToggleHand(context.leftRay.transform, context.leftRay, context.rightRay);
     }
 
     private void ToggleHand(Transform targetHand, XRRayInteractor targetRay, XRRayInteractor otherRay)
