@@ -1,3 +1,4 @@
+using UnityEngine;
 using System.IO;
 
 // Abstract class to handle artwork operations
@@ -17,7 +18,7 @@ public abstract class ArtworkHandler
     public virtual void ToggleEraseMode()
     {
         context.isErasing = !context.isErasing;
-        context.messageLogger.Log(context.isErasing ? "Eraser Mode Activated" : "Brush Mode Activated");
+        context.messageLogger.Log(context.languageSettings.Translate(context.isErasing ? "Eraser Mode Activated" : "Brush Mode Activated"));
     }
 
     public abstract void SaveArtwork();
@@ -30,7 +31,7 @@ public abstract class ArtworkHandler
     {
         ClearArtwork();
         context.currentArtworkIndex = -1;
-        context.messageLogger.Log("New Artwork Created");
+        context.messageLogger.Log(context.languageSettings.Translate("New Artwork Created"));
     }
 
     // Delete the current artwork
@@ -41,6 +42,6 @@ public abstract class ArtworkHandler
         context.currentArtworkIndex = -1;
         ClearArtwork();
         context.savedWhiteboardArtworks = GetArtworks();
-        context.messageLogger.Log("Deleted Artwork: " + Path.GetFileName(filePath));
+        context.messageLogger.Log(context.languageSettings.Translate("Deleted Artwork: " + Path.GetFileName(filePath)));
     }
 }

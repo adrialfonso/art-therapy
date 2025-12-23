@@ -43,13 +43,13 @@ public class BrushController : MonoBehaviour
         if (context.is3DMode)
         {
             artworkHandler = handler3DInstance;
-            context.messageLogger.Log("3D Brush mode");
+            context.messageLogger.Log(context.languageSettings.Translate("3D Brush Mode"));
             context.whiteboard.gameObject.SetActive(false);
         }
         else
         {
             artworkHandler = handler2DInstance;
-            context.messageLogger.Log("2D Whiteboard mode");
+            context.messageLogger.Log(context.languageSettings.Translate("Whiteboard Mode"));
             context.whiteboard.gameObject.SetActive(true);
         }
 
@@ -222,6 +222,6 @@ public class BrushController : MonoBehaviour
 
         handler3DInstance.LoadArtwork();
         Toggle3DMode(context.is3DMode);
-        context.messageLogger.Log("Welcome to Art Therapy VR! Start creating your masterpiece.");
+        context.messageLogger.Log(context.languageSettings.Translate("Welcome to Art Therapy VR! Start creating your artwork."));
     }
 }

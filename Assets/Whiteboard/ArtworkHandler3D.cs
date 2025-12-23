@@ -162,7 +162,7 @@ public class ArtworkHandler3D : ArtworkHandler
         if (!isOverwrite)
             context.currentArtworkIndex = context.savedWhiteboardArtworks.Length - 1;
 
-        context.messageLogger.Log("Artwork Saved: " + fileName);
+        context.messageLogger.Log(context.languageSettings.Translate("Artwork Saved: " + fileName));
     }
 
     // Load artwork from persistent data path (3D)
@@ -219,7 +219,7 @@ public class ArtworkHandler3D : ArtworkHandler
             yield return new WaitForSeconds(delay);
         }
 
-        context.messageLogger.Log("Artwork Loaded: " + Path.GetFileName(context.savedWhiteboardArtworks[context.currentArtworkIndex]));
+        context.messageLogger.Log(context.languageSettings.Translate("Artwork Loaded: " + Path.GetFileName(context.savedWhiteboardArtworks[context.currentArtworkIndex])));
     }
 
     // Erase lines near the given position

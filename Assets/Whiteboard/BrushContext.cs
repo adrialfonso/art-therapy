@@ -18,8 +18,11 @@ public class BrushContext : MonoBehaviour
     [Header("Environment Settings Observer")]
     [SerializeField] public EnvironmentSettingsObserver environmentSettings;
 
-    [Header("Audio Manager")]
+    [Header("Audio Settings")]
     [SerializeField] public AudioSettings audioSettings;
+
+    [Header("Language Settings")]
+    [SerializeField] public LanguageSettings languageSettings;
 
     [Header("Skybox Options")]
     [SerializeField] public Material[] skyboxOptions;

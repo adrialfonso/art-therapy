@@ -124,7 +124,7 @@ public class ArtworkHandler2D : ArtworkHandler
         if (!isOverwrite)
             context.currentArtworkIndex = context.savedWhiteboardArtworks.Length - 1;
 
-        context.messageLogger.Log("Artwork Saved: " + fileName);
+        context.messageLogger.Log(context.languageSettings.Translate("Artwork Saved: " + fileName));
     }
 
     // Load artwork from persistent data path (2D)
@@ -140,7 +140,7 @@ public class ArtworkHandler2D : ArtworkHandler
         loadedTexture.LoadImage(fileData);
 
         context.whiteboard.SetTexture(loadedTexture);
-        context.messageLogger.Log("Artwork Loaded: " + Path.GetFileName(context.savedWhiteboardArtworks[context.currentArtworkIndex]));
+        context.messageLogger.Log(context.languageSettings.Translate("Artwork Loaded: " + Path.GetFileName(context.savedWhiteboardArtworks[context.currentArtworkIndex])));
     }
 
     // Clear the whiteboard texture (2D)
