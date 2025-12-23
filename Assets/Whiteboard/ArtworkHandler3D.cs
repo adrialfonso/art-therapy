@@ -13,17 +13,16 @@ public class ArtworkHandler3D : ArtworkHandler
     private int index;
     private float snapRadius = 0.0125f;
 
-    public ArtworkHandler3D(BrushController controller) : base(controller) { }
+    public ArtworkHandler3D(BrushContext context) : base(context) { }
 
     public override void HandleDrawing()
     {
-        bool isDrawing = controller.isDrawingLeft || controller.isDrawingRight;
-
+        bool isDrawing = context.isDrawingLeft || context.isDrawingRight;
         if (isDrawing)
         {
-            Transform drawingTip = controller.isDrawingLeft ? controller.leftTipTransform : controller.rightTipTransform;
+            Transform drawingTip = context.isDrawingLeft ? context.leftTipTransform : context.rightTipTransform;
 
-            if (controller.isErasing)
+            if (context.isErasing)
             {
                 EraseLines(drawingTip.position);
                 return;
@@ -34,11 +33,11 @@ public class ArtworkHandler3D : ArtworkHandler
                 index = 0;
 
                 // Start a new line
-                currentLine = Object.Instantiate(controller.linePrefab);
-                currentLine.material.color = controller.brushSettings.BrushColor;
+                currentLine = Object.Instantiate(context.linePrefab);
+                currentLine.material.color = context.brushSettings.BrushColor;
 
-                float baseWidth = controller.brushSettings.BrushSize * 0.002f;
-                float curve = controller.brushSettings.BrushCurve;
+                float baseWidth = context.brushSettings.BrushSize * 0.002f;
+                float curve = context.brushSettings.BrushCurve;
                 
                 AnimationCurve brushCurve = new AnimationCurve(
                     new Keyframe(0f, curve),  
@@ -147,38 +146,38 @@ public class ArtworkHandler3D : ArtworkHandler
         string[] files = GetArtworks();
         string fileName;
 
-        bool isOverwrite = controller.currentArtworkIndex >= 0 && files.Length > 0 && controller.currentArtworkIndex < files.Length;
+        bool isOverwrite = context.currentArtworkIndex >= 0 && files.Length > 0 && context.currentArtworkIndex < files.Length;
 
         if (isOverwrite)
-            fileName = Path.GetFileName(files[controller.currentArtworkIndex]);
+            fileName = Path.GetFileName(files[context.currentArtworkIndex]);
         else
             fileName = $"artwork3D_{System.DateTime.Now:yyyyMMdd_HHmmss}.json";
 
         File.WriteAllText(Path.Combine(folderPath, fileName), json);
 
         // Refresh the saved artwork list
-        controller.savedWhiteboardArtworks = GetArtworks();
+        context.savedWhiteboardArtworks = GetArtworks();
 
         // Update current index if new artwork
         if (!isOverwrite)
-            controller.currentArtworkIndex = controller.savedWhiteboardArtworks.Length - 1;
+            context.currentArtworkIndex = context.savedWhiteboardArtworks.Length - 1;
 
-        controller.messageLogger.Log("Artwork Saved: " + fileName);
+        context.messageLogger.Log("Artwork Saved: " + fileName);
     }
 
     // Load artwork from persistent data path (3D)
     public override void LoadArtwork()
     {
-        controller.savedWhiteboardArtworks = GetArtworks();
-        if (controller.savedWhiteboardArtworks.Length == 0) return;
+        context.savedWhiteboardArtworks = GetArtworks();
+        if (context.savedWhiteboardArtworks.Length == 0) return;
 
-        controller.currentArtworkIndex = (controller.currentArtworkIndex + 1) % controller.savedWhiteboardArtworks.Length;
+        context.currentArtworkIndex = (context.currentArtworkIndex + 1) % context.savedWhiteboardArtworks.Length;
 
-        string json = File.ReadAllText(controller.savedWhiteboardArtworks[controller.currentArtworkIndex]);
+        string json = File.ReadAllText(context.savedWhiteboardArtworks[context.currentArtworkIndex]);
         LineCollection collection = JsonUtility.FromJson<LineCollection>(json);
 
         ClearArtwork();
-        controller.StartCoroutine(LoadArtworkWithDelay(collection, 0.025f));
+        context.StartCoroutine(LoadArtworkWithDelay(collection, 0.025f));
     }
 
     // Clear all 3D lines
@@ -206,7 +205,7 @@ public class ArtworkHandler3D : ArtworkHandler
     {
         foreach (var data in collection.lines)
         {
-            LineRenderer newLine = Object.Instantiate(controller.linePrefab);
+            LineRenderer newLine = Object.Instantiate(context.linePrefab);
             newLine.positionCount = data.points.Length;
             newLine.SetPositions(data.points);
             newLine.material.color = data.color;
@@ -220,7 +219,7 @@ public class ArtworkHandler3D : ArtworkHandler
             yield return new WaitForSeconds(delay);
         }
 
-        controller.messageLogger.Log("Artwork Loaded: " + Path.GetFileName(controller.savedWhiteboardArtworks[controller.currentArtworkIndex]));
+        context.messageLogger.Log("Artwork Loaded: " + Path.GetFileName(context.savedWhiteboardArtworks[context.currentArtworkIndex]));
     }
 
     // Erase lines near the given position

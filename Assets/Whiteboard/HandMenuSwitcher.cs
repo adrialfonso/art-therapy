@@ -4,23 +4,12 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class HandMenuSwitcher : MonoBehaviour
 {
-    [Header("Canvases to move")]
-    public GameObject canvas2D;
-    public GameObject canvas3D;
-
-    [Header("XR Controllers")]
-    public ActionBasedController rightHandController;
-    public ActionBasedController leftHandController;
-
     [Header("Input Actions")]
     public InputActionProperty ShowMenuLeftAction;
     public InputActionProperty ShowMenuRightAction;
 
-    [Header("Brush Controller Reference")]
-    public BrushController brushController;
-
-    private XRRayInteractor rightRay;
-    private XRRayInteractor leftRay;
+    [Header("Brush Context Reference")]
+    public BrushContext context;
 
     // State tracking
     private Transform currentHand = null;
@@ -30,9 +19,6 @@ public class HandMenuSwitcher : MonoBehaviour
 
     private void Start()
     {
-        rightRay = rightHandController.GetComponent<XRRayInteractor>();
-        leftRay = leftHandController.GetComponent<XRRayInteractor>();
-
         // Keep original position for resetting
         originalPosition = GetActiveCanvas().transform.position;
         originalRotation = GetActiveCanvas().transform.rotation;
@@ -46,20 +32,20 @@ public class HandMenuSwitcher : MonoBehaviour
 
     private GameObject GetActiveCanvas()
     {
-        if (brushController.is3DMode)
-            return canvas3D;
+        if (context.is3DMode)
+            return context.canvas3DUI;
         else
-            return canvas2D;
+            return context.canvas2DUI;
     }
 
     private void ToggleRight()
     {
-        ToggleHand(rightHandController.transform, rightRay, leftRay);
+        ToggleHand(context.rightRay.transform, context.rightRay, context.leftRay);
     }
 
     private void ToggleLeft()
     {
-        ToggleHand(leftHandController.transform, leftRay, rightRay);
+        ToggleHand(context.leftRay.transform, context.leftRay, context.rightRay);
     }
 
     private void ToggleHand(Transform targetHand, XRRayInteractor targetRay, XRRayInteractor otherRay)

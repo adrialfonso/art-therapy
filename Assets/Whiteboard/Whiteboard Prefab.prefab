@@ -2579,9 +2579,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tip: {fileID: 230497202562534243}
-  brushSettings: {fileID: 8011878002815430114}
-  brushController: {fileID: 8011878002585612124}
-  lineRenderer: {fileID: 3720165347765393665}
+  brushContext: {fileID: 6985289721445119716}
   minSize: 0.02
   maxSize: 0.05
 --- !u!1 &1950658069071637026
@@ -4201,6 +4199,77 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: -20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &3505890198707963393
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8008531872469817083}
+  - component: {fileID: 6985289721445119716}
+  m_Layer: 0
+  m_Name: Brush Context
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8008531872469817083
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3505890198707963393}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8011878003682966516}
+  m_RootOrder: 10
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6985289721445119716
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3505890198707963393}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 927fee4ced8859c4580602b457bd70fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  leftRay: {fileID: 8011878003700418145}
+  rightRay: {fileID: 8011878002373816889}
+  leftController: {fileID: 8011878003700418147}
+  rightController: {fileID: 8011878002373816891}
+  brushSettings: {fileID: 8011878002815430114}
+  environmentSettings: {fileID: 2962203669082979545}
+  audioSettings: {fileID: 41906709017154320}
+  skyboxOptions:
+  - {fileID: 2100000, guid: d267332d4c376c74d88e8d293a2b12df, type: 2}
+  - {fileID: 2100000, guid: aee06223f1ae82d4ba3fc02698373190, type: 2}
+  - {fileID: 2100000, guid: 6d0947ae5771e8f4b9ec57e69750bb53, type: 2}
+  - {fileID: 2100000, guid: 2b524de57b52dab4c97f343cd8d9ffae, type: 2}
+  - {fileID: 2100000, guid: 87f1299014d45ad4ebfa64d86beb393f, type: 2}
+  - {fileID: 2100000, guid: 7b6dad80e4ec4d74c8cad8702e8eca26, type: 2}
+  canvas2DUI: {fileID: 8011878003508722539}
+  canvas3DUI: {fileID: 7097020377866398164}
+  rightTipTransform: {fileID: 8029506911407467635}
+  leftTipTransform: {fileID: 230497202562534243}
+  linePrefab: {fileID: 3720165347765393665}
+  whiteboard: {fileID: 8011878003358091863}
+  messageLogger: {fileID: 3674753057064332127}
+  is3DMode: 0
+  isErasing: 0
+  isDrawingLeft: 0
+  isDrawingRight: 0
+  currentArtworkIndex: -1
+  savedWhiteboardArtworks: []
 --- !u!1 &3559955574945023711
 GameObject:
   m_ObjectHideFlags: 0
@@ -10689,9 +10758,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tip: {fileID: 8029506911407467635}
-  brushSettings: {fileID: 8011878002815430114}
-  brushController: {fileID: 8011878002585612124}
-  lineRenderer: {fileID: 3720165347765393665}
+  brushContext: {fileID: 6985289721445119716}
   minSize: 0.02
   maxSize: 0.05
 --- !u!1 &7901765868173802878
@@ -13669,33 +13736,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ccdd0ae28c7c214cab0faebeb86b1f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  leftRay: {fileID: 8011878003700418145}
-  rightRay: {fileID: 8011878002373816889}
-  leftController: {fileID: 8011878003700418147}
-  rightController: {fileID: 8011878002373816891}
-  brushSettings: {fileID: 8011878002815430114}
-  environmentSettings: {fileID: 2962203669082979545}
-  audioSettings: {fileID: 41906709017154320}
-  skyboxOptions:
-  - {fileID: 2100000, guid: d267332d4c376c74d88e8d293a2b12df, type: 2}
-  - {fileID: 2100000, guid: aee06223f1ae82d4ba3fc02698373190, type: 2}
-  - {fileID: 2100000, guid: 6d0947ae5771e8f4b9ec57e69750bb53, type: 2}
-  - {fileID: 2100000, guid: 2b524de57b52dab4c97f343cd8d9ffae, type: 2}
-  - {fileID: 2100000, guid: 87f1299014d45ad4ebfa64d86beb393f, type: 2}
-  - {fileID: 2100000, guid: 7b6dad80e4ec4d74c8cad8702e8eca26, type: 2}
-  canvas2DUI: {fileID: 8011878003508722539}
-  canvas3DUI: {fileID: 7097020377866398164}
-  rightTipTransform: {fileID: 8029506911407467635}
-  leftTipTransform: {fileID: 230497202562534243}
-  linePrefab: {fileID: 3720165347765393665}
-  is3DMode: 0
-  isErasing: 0
-  isDrawingLeft: 0
-  isDrawingRight: 0
-  currentArtworkIndex: -1
-  savedWhiteboardArtworks: []
-  whiteboard: {fileID: 8011878003358091863}
-  messageLogger: {fileID: 3674753057064332127}
+  context: {fileID: 6985289721445119716}
 --- !u!1 &8011878002599107695
 GameObject:
   m_ObjectHideFlags: 0
@@ -14158,10 +14199,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f0e4645f0392d3458b79d5845f0fa11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canvas2D: {fileID: 8011878003508722539}
-  canvas3D: {fileID: 7097020377866398164}
-  rightHandController: {fileID: 8011878002373816890}
-  leftHandController: {fileID: 8011878003700418146}
   ShowMenuLeftAction:
     m_UseReference: 1
     m_Action:
@@ -14186,7 +14223,7 @@ MonoBehaviour:
       m_SingletonActionBindings: []
       m_Flags: 0
     m_Reference: {fileID: 187161793506945269, guid: c348712bda248c246b8c49b3db54643f, type: 3}
-  brushController: {fileID: 8011878002585612124}
+  context: {fileID: 6985289721445119716}
 --- !u!114 &8011878002815430114
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15793,6 +15830,7 @@ Transform:
   - {fileID: 8011878002585612125}
   - {fileID: 8011878003358091819}
   - {fileID: 6131565084395420377}
+  - {fileID: 8008531872469817083}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

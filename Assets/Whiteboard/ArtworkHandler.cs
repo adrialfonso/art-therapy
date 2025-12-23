@@ -3,11 +3,11 @@ using System.IO;
 // Abstract class to handle artwork operations
 public abstract class ArtworkHandler
 {
-    protected BrushController controller;
+    protected BrushContext context;
 
-    public ArtworkHandler(BrushController controller)
+    public ArtworkHandler(BrushContext context)
     {
-        this.controller = controller;
+        this.context = context;
     }
 
     public abstract void HandleDrawing();
@@ -16,8 +16,8 @@ public abstract class ArtworkHandler
     // Toggle between eraser and brush modes
     public virtual void ToggleEraseMode()
     {
-        controller.isErasing = !controller.isErasing;
-        controller.messageLogger.Log(controller.isErasing ? "Eraser Mode Activated" : "Brush Mode Activated");
+        context.isErasing = !context.isErasing;
+        context.messageLogger.Log(context.isErasing ? "Eraser Mode Activated" : "Brush Mode Activated");
     }
 
     public abstract void SaveArtwork();
@@ -29,18 +29,18 @@ public abstract class ArtworkHandler
     public virtual void NewArtwork()
     {
         ClearArtwork();
-        controller.currentArtworkIndex = -1;
-        controller.messageLogger.Log("New Artwork Created");
+        context.currentArtworkIndex = -1;
+        context.messageLogger.Log("New Artwork Created");
     }
 
     // Delete the current artwork
     public virtual void DeleteArtwork()
     {
-        string filePath = controller.savedWhiteboardArtworks[controller.currentArtworkIndex];
+        string filePath = context.savedWhiteboardArtworks[context.currentArtworkIndex];
         File.Delete(filePath);
-        controller.currentArtworkIndex = -1;
+        context.currentArtworkIndex = -1;
         ClearArtwork();
-        controller.savedWhiteboardArtworks = GetArtworks();
-        controller.messageLogger.Log("Deleted Artwork: " + Path.GetFileName(filePath));
+        context.savedWhiteboardArtworks = GetArtworks();
+        context.messageLogger.Log("Deleted Artwork: " + Path.GetFileName(filePath));
     }
 }
