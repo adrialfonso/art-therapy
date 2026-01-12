@@ -1,59 +1,62 @@
 using UnityEngine;
+using System.Linq;
 
 public class AudioSettings : MonoBehaviour
 {
-    [Header("Audio Clips")]
-    [SerializeField] private AudioClip ambientMusic;
-    [SerializeField] private AudioClip drawSound;
-
     [Header("Audio Sources")]
     [SerializeField] private AudioSource ambientSource;
-    [SerializeField] private AudioSource drawSource;
+    [SerializeField] private AudioSource soundEffectSource;
 
-    [Header("Brush Controller Reference")]
-    [SerializeField] private BrushController brushController;
+    [Header("Ambient Music Options")]
+    [SerializeField] private AudioClip[] ambientMusicOptions;
 
-    [Header("Volume Settings")]
-    [Range(0f, 1f)] public float ambientVolume = 0.5f;
-    [Range(0f, 1f)] public float drawVolume = 0.8f;
+    [Header("Sound Effect Options")]
+    [SerializeField] private AudioClip[] soundEffectOptions;
 
     private void Awake()
     {
-        // Ambient music setup
         if (ambientSource == null)
+        {
             ambientSource = gameObject.AddComponent<AudioSource>();
-        ambientSource.clip = ambientMusic;
-        ambientSource.loop = true;
-        ambientSource.volume = ambientVolume;
-        ambientSource.playOnAwake = false;
-        ambientSource.Play();
+            ambientSource.loop = true;
+            ambientSource.playOnAwake = false;
+            ambientSource.spatialBlend = 0f;
+        }
 
-        // Draw sound setup
-        if (drawSource == null)
-            drawSource = gameObject.AddComponent<AudioSource>();
-        drawSource.clip = drawSound;
-        drawSource.loop = true; 
-        drawSource.volume = drawVolume;
-        drawSource.playOnAwake = false;
+        if (soundEffectSource == null)
+        {
+            soundEffectSource = gameObject.AddComponent<AudioSource>();
+            soundEffectSource.loop = false;
+            soundEffectSource.playOnAwake = false;
+            soundEffectSource.spatialBlend = 0f;
+        }
     }
 
-    private void Update()
+    // Play random ambient music from the available options
+    public void PlayRandomAmbientMusic()
     {
-        if (brushController == null) return;
+        if (ambientMusicOptions == null || ambientMusicOptions.Length == 0)
+            return;
 
-        // Detect if any controller is drawing
-        bool isDrawing = (brushController.leftState != null && brushController.leftState.isDrawing) ||
-                         (brushController.rightState != null && brushController.rightState.isDrawing);
+        int index = Random.Range(0, ambientMusicOptions.Length);
+        ambientSource.clip = ambientMusicOptions[index];
+        ambientSource.volume = 0.1f;
+        ambientSource.Play();
+    }
 
-        if (isDrawing)
-        {
-            if (!drawSource.isPlaying)
-                drawSource.Play();
-        }
-        else
-        {
-            if (drawSource.isPlaying)
-                drawSource.Stop();
-        }
+    // Play a specific sound effect by name
+    public void PlaySoundEffect(string clipName)
+    {
+        if (string.IsNullOrEmpty(clipName) || soundEffectSource == null)
+            return;
+
+        AudioClip clip = soundEffectOptions.FirstOrDefault(c => c != null && c.name == clipName);
+        soundEffectSource.PlayOneShot(clip, 0.5f);
+    }
+
+    public void SetAmbientVolume(float volume)
+    {
+        if (ambientSource != null)
+            ambientSource.volume = volume;
     }
 }

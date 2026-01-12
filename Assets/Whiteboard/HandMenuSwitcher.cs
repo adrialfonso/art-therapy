@@ -4,34 +4,24 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class HandMenuSwitcher : MonoBehaviour
 {
-    [Header("Canvas to move")]
-    public GameObject canvasObject;
-
-    [Header("XR Controllers")]
-    public ActionBasedController rightHandController;
-    public ActionBasedController leftHandController;
-
     [Header("Input Actions")]
     public InputActionProperty ShowMenuLeftAction;
     public InputActionProperty ShowMenuRightAction;
 
-    private XRRayInteractor rightRay;
-    private XRRayInteractor leftRay;
+    [Header("Brush Context Reference")]
+    public BrushContext context;
 
     // State tracking
-    private Transform currentHand = null; 
+    private Transform currentHand = null;
     private Vector3 originalPosition;
     private Quaternion originalRotation;
     private int sameHandClickCount = 0;
 
     private void Start()
     {
-        rightRay = rightHandController.GetComponent<XRRayInteractor>();
-        leftRay = leftHandController.GetComponent<XRRayInteractor>();
-
         // Keep original position for resetting
-        originalPosition = canvasObject.transform.position;
-        originalRotation = canvasObject.transform.rotation;
+        originalPosition = GetActiveCanvas().transform.position;
+        originalRotation = GetActiveCanvas().transform.rotation;
 
         if (ShowMenuLeftAction.action != null)
             ShowMenuLeftAction.action.performed += _ => ToggleLeft();
@@ -40,18 +30,28 @@ public class HandMenuSwitcher : MonoBehaviour
             ShowMenuRightAction.action.performed += _ => ToggleRight();
     }
 
+    private GameObject GetActiveCanvas()
+    {
+        if (context.is3DMode)
+            return context.canvas3DUI;
+        else
+            return context.canvas2DUI;
+    }
+
     private void ToggleRight()
     {
-        ToggleHand(rightHandController.transform, rightRay, leftRay);
+        ToggleHand(context.rightRay.transform, context.rightRay, context.leftRay);
     }
 
     private void ToggleLeft()
     {
-        ToggleHand(leftHandController.transform, leftRay, rightRay);
+        ToggleHand(context.leftRay.transform, context.leftRay, context.rightRay);
     }
 
     private void ToggleHand(Transform targetHand, XRRayInteractor targetRay, XRRayInteractor otherRay)
     {
+        GameObject canvasObject = GetActiveCanvas();
+
         if (currentHand == targetHand)
         {
             sameHandClickCount++;
@@ -104,6 +104,6 @@ public class HandMenuSwitcher : MonoBehaviour
         obj.transform.SetParent(parentTransform);
         obj.transform.localPosition = Vector3.zero;
         obj.transform.localRotation = Quaternion.Euler(-30, 180, 0);
-        obj.transform.localScale = new Vector3(0.003f, 0.003f, 0.003f);
+        obj.transform.localScale = new Vector3(0.0035f, 0.0035f, 0.0035f);
     }
 }
